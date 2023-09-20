@@ -10,6 +10,8 @@ namespace AddressBookAPI
 		{
 			CreateMap<User, RegisterDto>();
 			CreateMap<RegisterDto, User>();
+			CreateMap<LoginDto, User>();
+			CreateMap<User, LoginDto>();
 		}
 	}
 }

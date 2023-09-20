@@ -1,11 +1,11 @@
-﻿using Auth.Models.Users;
+﻿using Auth.Interfaces;
+using Auth.Models.Users;
 
 namespace Auth.Dto
 {
-    public class LoginDto : IUser
-    {
-        public string Id { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
-    }
+	public class LoginDto : IBaseUser
+	{
+		public string Email { get; set; } = string.Empty;
+		public string Password { get; set; } = string.Empty;
+	}
 }

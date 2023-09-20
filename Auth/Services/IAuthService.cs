@@ -1,12 +1,14 @@
 ﻿using Auth.Dto;
 using Auth.Models.Users;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Services
 {
-    public interface IAuthService
-    {
-        public User? GetUserById(string id);
-        public User? Register(RegisterDto user);
-        public User? Login(LoginDto user);
-    }
+	public interface IAuthService
+	{
+		User? GetUserById(string id);
+		User Register(RegisterDto user);
+		User? Login(LoginDto user);
+		User? GetUserByEmail(string email);
+	}
 }

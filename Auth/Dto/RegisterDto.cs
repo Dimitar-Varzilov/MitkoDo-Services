@@ -1,14 +1,11 @@
-﻿using Auth.Models.Users;
+﻿using Auth.Interfaces;
 
 namespace Auth.Dto
 {
-    public interface IRegisterDto : IBaseUser
-    {
-
-    }
-    public class RegisterDto : IRegisterDto
-    {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
-    }
+	public class RegisterDto : IBaseUser
+	{
+		public string Email { get; set; } = null!;
+		public string Password { get; set; } = null!;
+		public string ConfirmPassword { get; set; } = null!;
+	}
 }

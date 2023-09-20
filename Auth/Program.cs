@@ -41,7 +41,6 @@ namespace Auth
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
