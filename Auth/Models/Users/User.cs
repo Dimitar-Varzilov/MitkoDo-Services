@@ -1,15 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Auth.Models.Users
+﻿namespace Auth.Models.Users
 {
+    public interface IBaseUser
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+    public interface IUser : IBaseUser
+    {
+        string Id { get; set; }
+    }
     public class User : IUser
     {
-        [Key]
-        public string? Id { get; set; } = string.Empty;
-        [Required]
-        public string email { get; set; } = string.Empty;
-        [Required]
-        public string password { get; set; } = string.Empty;
-		public string[] tasks { get; set; } = [];
+        public string Id { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Password { get; set; } = null!;
     }
 }

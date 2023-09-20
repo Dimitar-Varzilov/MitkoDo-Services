@@ -1,38 +1,44 @@
+using Auth.Dto;
 using Auth.Models.Users;
+using Auth.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Controllers
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class AuthController : ControllerBase
-	{
-		private static readonly List<User> users = new();
+    [ApiController]
+    [Route("[controller]")]
+    public class AuthController(IAuthService authService) : ControllerBase
+    {
+        private readonly IAuthService AuthService = authService;
 
-		[HttpGet]
-		public IEnumerable<User> Get()
-		{
-			return users;
-		}
+        [HttpGet("{id}")]
+        public object Get(string id)
+        {
 
-		[HttpPost]
-		public object Register(User user)
-		{
-			if (users.Any(u => u.email == user.email))
-			{
-				return BadRequest("User with that email already exists");
-			}
-			int odd = Math.Abs(DateTime.Now.Millisecond);
+            User? userFinded = AuthService.GetUserById(id);
+            if (userFinded == null)
+            {
+                return NotFound();
+            }
+            return Ok(userFinded);
+        }
 
-			User newUser = new User();
-			newUser.email = user.email;
-			newUser.password = user.password;
-			newUser.tasks = user.tasks;
-			newUser.Id = odd.ToString();
+        [HttpPost("register")]
+        public object Register(RegisterDto user)
+        {
+            User? result = AuthService.Register(user);
 
-			users.Add(newUser);
+            if (result == null) return BadRequest(new { message = "User with that email already exists" });
+            return Ok(result);
+        }
 
-			return Ok();
-		}
-	}
+        [HttpPost("login")]
+        public object Login(LoginDto user)
+        {
+            User? result = AuthService.Login(user);
+
+            if (result == null) return BadRequest(new { message = "Email or password is incorrect" });
+            return Ok(result);
+        }   
+    }
 }
