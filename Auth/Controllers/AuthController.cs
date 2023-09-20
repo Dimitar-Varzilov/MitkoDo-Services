@@ -17,8 +17,7 @@ namespace Auth.Controllers
 		private readonly IAuthService AuthService = authService;
 		private readonly string issuer = "http://localhost:5000";
 		private readonly string audience = "http://localhost:5000";
-		List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value))];
-
+		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? "MitkoDo secret key is something veeeery long hsjidhfksdhfldiskhfliksdhgfiksdhfkihsdikufhsdikuhfsdkhfjksdhgf"))];
 		User user { get; set; } = new();
 		private readonly IConfiguration _configuration = configuration;
 
@@ -35,7 +34,7 @@ namespace Auth.Controllers
 		}
 
 		[HttpPost("register")]
-		public async Task<ActionResult<User>> Register(RegisterDto request)
+		public object Register(RegisterDto request)
 		{
 			if (request.Password != request.ConfirmPassword)
 				return BadRequest("Passwords do not match");
@@ -47,7 +46,6 @@ namespace Auth.Controllers
 			user.PasswordHash = passwordHash;
 			user.PasswordSalt = passwordSalt;
 			Program.users.Add(user);
-			await Console.Out.WriteLineAsync(user.Email);
 
 			return Ok(true);
 		}
@@ -142,7 +140,7 @@ namespace Auth.Controllers
 			}
 			catch (SecurityTokenValidationException ex)
 			{
-				jwt = null;
+				jwt = new JwtSecurityToken();
 				Console.WriteLine(ex.Message);
 				return false;
 			}
