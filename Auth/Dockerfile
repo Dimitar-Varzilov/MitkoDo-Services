@@ -22,3 +22,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Auth.dll"]
+ENV "ASPNETCORE_HTTPS_PORTS" "7145",
+ENV "ASPNETCORE_HTTP_PORTS" "5170" 

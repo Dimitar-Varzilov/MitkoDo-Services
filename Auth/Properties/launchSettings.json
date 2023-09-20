@@ -37,6 +37,8 @@
         "ASPNETCORE_HTTP_PORTS": "5170"
       },
       "publishAllPorts": true,
+      "httpPort": 5170,
+      "sslPort": 7145,
       "useSSL": true
     }
   },
