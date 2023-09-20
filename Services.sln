@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34112.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth", "Auth\Auth.csproj", "{BA4B0F3D-FD86-422E-A5A7-55C340169BD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tasks", "Tasks\Tasks.csproj", "{D0404461-F241-48AF-8F49-5367FF345213}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tasks", "Tasks\Tasks.csproj", "{D0404461-F241-48AF-8F49-5367FF345213}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
