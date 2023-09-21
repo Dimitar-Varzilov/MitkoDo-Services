@@ -1,0 +1,16 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  web_api:
+    image: auth_api
+    container_name: web_api_application
+    ports:
+      #- "7145:7145"
+      - "5170:5170"
+  sql:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: sql_server2022
+    ports: # not actually needed, because the two services are on the same network
+      - "1433:1433" 
+    environment:
+      - ACCEPT_EULA=y
+      - SA_PASSWORD=A&VeryComplex123Password

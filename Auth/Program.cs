@@ -1,49 +1,77 @@
-using AddressBookAPI;
-using Auth.Models.Users;
+using Auth;
+using Auth.Models;
 using Auth.Services;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Auth
 {
-    public class Program
-    {
-        public static List<User> users = new();
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+	public class Program
+	{
+		public static List<User> Users = new();
+		private static string _connStr = @"
+	Server=127.0.0.1,1433;
+	Database=Master;
+	User Id=SA;
+	Password=A&VeryComplex123Password
+	MultipleActiveResultSets=true
+	TrustServerCertificate=True"
+;
 
-            // Add services to the container.
+		public static void Main(string[] args)
+		{
+			var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+			// Add services to the container.
 
-            //Custom services
-            builder.Services.AddSingleton<IAuthService, AuthService>();
-            var mapperConfig = new MapperConfiguration(mc =>
-            {
-                mc.AddProfile(new AutoMapperProfile());
-            });
-            IMapper mapper = mapperConfig.CreateMapper();
-            builder.Services.AddSingleton(mapper);
+			builder.Services.AddControllers();
+			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+			builder.Services.AddEndpointsApiExplorer();
+			builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+			//Custom services
+			string dbString = !builder.Environment.IsDevelopment() ? "AuthDb" : "AuthDb-dev";
+			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			//builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(_connStr));
+			builder.Services.AddSingleton<IAuthService, AuthService>();
+			var mapperConfig = new MapperConfiguration(mc =>
+			{
+				mc.AddProfile(new AutoMapperProfile());
+			});
+			IMapper mapper = mapperConfig.CreateMapper();
+			builder.Services.AddSingleton(mapper);
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+			var app = builder.Build();
 
-            app.UseHttpsRedirection();
+			//using (var scope = app.Services.CreateScope())
+			//{
+			//	var db = scope.ServiceProvider.GetRequiredService<AuthContext>();
+			//	db.Database.Migrate(); // This is needed to ensure the db is in the latest version.
+			//}
 
-            app.UseAuthorization();
+			using (var scope = app.Services.CreateScope())
+			{
+				var authContext = scope.ServiceProvider.GetRequiredService<AuthContext>();
+				authContext.Database.EnsureCreated();
+				authContext.Seed();
+			}
 
-            app.MapControllers();
+			// Configure the HTTP request pipeline.
+			if (app.Environment.IsDevelopment())
+			{
+				app.UseSwagger();
+				app.UseSwaggerUI();
+			}
 
-            app.Run();
-        }
-    }
+			//app.UseHttpsRedirection();
+
+			app.UseAuthorization();
+
+			app.MapControllers();
+
+			app.Run();
+
+		}
+	}
 }
+

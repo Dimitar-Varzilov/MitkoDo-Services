@@ -1,10 +1,10 @@
 ﻿using Auth.Dto;
-using Auth.Models.Users;
+using Auth.Models;
 using AutoMapper;
 
-namespace AddressBookAPI
+namespace Auth
 {
-	public class AutoMapperProfile : Profile
+    public class AutoMapperProfile : Profile
 	{
 		public AutoMapperProfile()
 		{

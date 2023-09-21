@@ -1,5 +1,5 @@
 using Auth.Dto;
-using Auth.Models.Users;
+using Auth.Models;
 using Auth.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +12,7 @@ namespace Auth.Controllers
 
 	[ApiController]
 	[Route("[controller]")]
-	public class AuthController(IAuthService authService, IConfiguration configuration) : ControllerBase
+	public class AuthController(IAuthService authService, IConfiguration configuration, AuthContext authContext) : ControllerBase
 	{
 		private readonly IAuthService AuthService = authService;
 		private readonly string issuer = "http://localhost:5000";
@@ -20,6 +20,13 @@ namespace Auth.Controllers
 		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? "MitkoDo secret key is something veeeery long hsjidhfksdhfldiskhfliksdhgfiksdhfkihsdikufhsdikuhfsdkhfjksdhgf"))];
 		User user { get; set; } = new();
 		private readonly IConfiguration _configuration = configuration;
+		private readonly AuthContext _authContext = authContext;
+
+		[HttpGet]
+		public ActionResult Get(int take = 10, int skip = 0)
+		{
+			return Ok(_authContext.Users?.OrderBy(u => u.Email).Skip(skip).Take(take));
+		}
 
 		[HttpGet("{id}")]
 		public object Get(string id)
@@ -45,7 +52,7 @@ namespace Auth.Controllers
 			user.Email = request.Email;
 			user.PasswordHash = passwordHash;
 			user.PasswordSalt = passwordSalt;
-			Program.users.Add(user);
+			Program.Users.Add(user);
 
 			return Ok(true);
 		}
