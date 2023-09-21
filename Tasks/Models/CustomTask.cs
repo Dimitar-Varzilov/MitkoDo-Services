@@ -4,7 +4,7 @@ using Tasks.Interfaces;
 
 namespace Tasks.Models
 {
-	public class Task : ITask, IId
+	public class CustomTask : ITask, IId
 	{
 		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();

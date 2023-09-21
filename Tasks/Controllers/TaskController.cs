@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Tasks.Models;
 
 namespace Tasks.Controllers
 {
@@ -8,9 +9,9 @@ namespace Tasks.Controllers
 	{
 
 		[HttpGet]
-		public OkObjectResult Get()
+		public OkObjectResult GetAllTask()
 		{
-			return Ok("test ok");
+			return Ok(Program.Tasks);
 		}
 	}
 }

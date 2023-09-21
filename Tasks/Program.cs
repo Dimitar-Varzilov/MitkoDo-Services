@@ -1,8 +1,14 @@
-
+using Tasks.Models;
 namespace Tasks
 {
 	public class Program
 	{
+		public static List<CustomTask> Tasks =new()
+		{
+			new CustomTask {Id = Guid.NewGuid(), Title = "Task 1", Description = "Description 1", Status = TaskStatus.Running},
+			new CustomTask {Id = Guid.NewGuid(), Title = "Task 2", Description = "Description 2", Status = TaskStatus.WaitingToRun},
+			new CustomTask {Id = Guid.NewGuid(), Title = "Task 3", Description = "Description 3", Status = TaskStatus.Created},
+		};
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
