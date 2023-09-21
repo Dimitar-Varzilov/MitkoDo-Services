@@ -9,7 +9,6 @@ using System.Security.Cryptography;
 
 namespace Auth.Controllers
 {
-
 	[ApiController]
 	[Route("[controller]")]
 	public class AuthController(IAuthService authService, IConfiguration configuration, AuthContext authContext) : ControllerBase
@@ -25,7 +24,7 @@ namespace Auth.Controllers
 		[HttpGet]
 		public ActionResult Get(int take = 10, int skip = 0)
 		{
-			return Ok(_authContext.Users?.OrderBy(u => u.Email).Skip(skip).Take(take));
+			return Ok(_authContext.Users?.Skip(skip).Take(take));
 		}
 
 		[HttpGet("{id}")]
@@ -98,32 +97,20 @@ namespace Auth.Controllers
 			];
 
 			var cred = new SigningCredentials(securityKeys[0], SecurityAlgorithms.HmacSha512Signature);
-			var token = new JwtSecurityToken(
-								   claims: claims,
-								   expires: DateTime.UtcNow.AddDays(1),
-								   signingCredentials: cred,
-								   issuer: issuer,
-								   audience: audience
-   );
+			var token = new JwtSecurityToken(claims: claims, expires: DateTime.UtcNow.AddDays(1), signingCredentials: cred, issuer: issuer, audience: audience);
 			var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 			return jwt;
 		}
 
 		[HttpPost("verifyToken")]
-		public bool VerifyToken(string token)
+		public bool VerifyToken([FromBody] VerifyTokenDto prop)
 		{
-
+			string token = prop.Token;
 			bool isValid = ValidateToken(token, issuer, audience, out JwtSecurityToken jwt);
 			return isValid;
 		}
 
-		private bool ValidateToken(
-  string token,
-  string issuer,
-  string audience,
-
- out JwtSecurityToken jwt
-)
+		private bool ValidateToken(string token, string issuer, string audience, out JwtSecurityToken jwt)
 		{
 			var validationParameters = new TokenValidationParameters
 			{
@@ -151,6 +138,19 @@ namespace Auth.Controllers
 				Console.WriteLine(ex.Message);
 				return false;
 			}
+		}
+
+		[HttpDelete("{id}")]
+		public object Delete(string id)
+		{
+			User? userFinded = AuthService.GetUserById(id);
+			if (userFinded == null)
+			{
+				return NotFound();
+			}
+			_authContext.Users?.Remove(userFinded);
+			_authContext.SaveChanges();
+			return Ok();
 		}
 
 	}

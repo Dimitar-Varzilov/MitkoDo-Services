@@ -9,14 +9,6 @@ namespace Auth
 	public class Program
 	{
 		public static List<User> Users = new();
-		private static string _connStr = @"
-	Server=127.0.0.1,1433;
-	Database=Master;
-	User Id=SA;
-	Password=A&VeryComplex123Password
-	MultipleActiveResultSets=true
-	TrustServerCertificate=True"
-;
 
 		public static void Main(string[] args)
 		{
@@ -30,9 +22,9 @@ namespace Auth
 			builder.Services.AddSwaggerGen();
 
 			//Custom services
-			string dbString = !builder.Environment.IsDevelopment() ? "AuthDb" : "AuthDb-dev";
-			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
-			//builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(_connStr));
+			string dbString = builder.Environment.IsDevelopment() ? "AuthDb-dev" : "AuthDb";
+			//builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDb-dev")));
 			builder.Services.AddSingleton<IAuthService, AuthService>();
 			var mapperConfig = new MapperConfiguration(mc =>
 			{
