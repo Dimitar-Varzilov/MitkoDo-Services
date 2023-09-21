@@ -2,155 +2,51 @@ using Auth.Dto;
 using Auth.Models;
 using Auth.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
 
 namespace Auth.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]
-	public class AuthController(IAuthService authService, IConfiguration configuration, AuthContext authContext) : ControllerBase
+	public class AuthController(IAuthService authService) : ControllerBase
 	{
-		private readonly IAuthService AuthService = authService;
-		private readonly string issuer = "http://localhost:5000";
-		private readonly string audience = "http://localhost:5000";
-		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? "MitkoDo secret key is something veeeery long hsjidhfksdhfldiskhfliksdhgfiksdhfkihsdikufhsdikuhfsdkhfjksdhgf"))];
-		User user { get; set; } = new();
-		private readonly IConfiguration _configuration = configuration;
-		private readonly AuthContext _authContext = authContext;
-
-		[HttpGet]
-		public ActionResult Get(int take = 10, int skip = 0)
-		{
-			return Ok(_authContext.Users?.Skip(skip).Take(take));
-		}
+		private readonly IAuthService _authService = authService;
 
 		[HttpGet("{id}")]
-		public object Get(string id)
+		public ActionResult Get(string id)
 		{
-
-			User? userFinded = AuthService.GetUserById(id);
-			if (userFinded == null)
+			User? userFound = _authService.GetUserById(id);
+			if (userFound == null)
 			{
 				return NotFound();
 			}
-			return Ok(userFinded);
+			return Ok(userFound);
 		}
 
 		[HttpPost("register")]
-		public object Register(RegisterDto request)
+		public int Register(RegisterDto request)
 		{
-			if (request.Password != request.ConfirmPassword)
-				return BadRequest("Passwords do not match");
-			if (AuthService.GetUserByEmail(request.Email) != null)
-				return BadRequest("User already exists");
-
-			CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-			user.Email = request.Email;
-			user.PasswordHash = passwordHash;
-			user.PasswordSalt = passwordSalt;
-			Program.Users.Add(user);
-
-			return Ok(true);
+			return _authService.RegisterUser(request);
 		}
+
 
 		[HttpPost("login")]
-		public object Login(LoginDto request)
+		public string Login(LoginDto request)
 		{
-			User? userFromDb = AuthService.GetUserByEmail(request.Email);
-			if (userFromDb == null)
-				return BadRequest("User not found");
-
-			user = userFromDb;
-
-			if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-				return BadRequest("Wrong password");
-
-			string token = CreateToken(user);
-
-			return Ok(token);
-		}
-
-		private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-		{
-			using var hmac = new HMACSHA512();
-			passwordSalt = hmac.Key;
-			passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-		}
-
-		private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-		{
-			using (var hmac = new HMACSHA512(passwordSalt))
-			{
-				var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-				return computedHash.SequenceEqual(passwordHash);
-			}
-		}
-		private string CreateToken(User user)
-		{
-			List<Claim> claims =
-			[
-				new Claim(ClaimTypes.Name, user.Email),
-				new Claim(ClaimTypes.NameIdentifier, user.Id)
-			];
-
-			var cred = new SigningCredentials(securityKeys[0], SecurityAlgorithms.HmacSha512Signature);
-			var token = new JwtSecurityToken(claims: claims, expires: DateTime.UtcNow.AddDays(1), signingCredentials: cred, issuer: issuer, audience: audience);
-			var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-			return jwt;
+			return _authService.LoginUser(request);
 		}
 
 		[HttpPost("verifyToken")]
 		public bool VerifyToken([FromBody] VerifyTokenDto prop)
 		{
 			string token = prop.Token;
-			bool isValid = ValidateToken(token, issuer, audience, out JwtSecurityToken jwt);
-			return isValid;
-		}
-
-		private bool ValidateToken(string token, string issuer, string audience, out JwtSecurityToken jwt)
-		{
-			var validationParameters = new TokenValidationParameters
-			{
-				ValidateIssuer = true,
-				ValidIssuer = issuer,
-				ValidateAudience = true,
-				ValidAudience = audience,
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKeys = securityKeys,
-				ValidateLifetime = true,
-
-			};
-
-			try
-			{
-				var tokenHandler = new JwtSecurityTokenHandler();
-				var isValid = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken) ?? throw new SecurityTokenValidationException("Token is not valid");
-				jwt = (JwtSecurityToken)validatedToken;
-
-				return true;
-			}
-			catch (SecurityTokenValidationException ex)
-			{
-				jwt = new JwtSecurityToken();
-				Console.WriteLine(ex.Message);
-				return false;
-			}
+			return _authService.ValidateToken(token);
 		}
 
 		[HttpDelete("{id}")]
-		public object Delete(string id)
+		public int Delete(string id)
 		{
-			User? userFinded = AuthService.GetUserById(id);
-			if (userFinded == null)
-			{
-				return NotFound();
-			}
-			_authContext.Users?.Remove(userFinded);
-			_authContext.SaveChanges();
-			return Ok();
+			return _authService.DeleteUser(id);
 		}
 
 	}
