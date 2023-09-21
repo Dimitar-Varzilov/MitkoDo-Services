@@ -2,7 +2,6 @@ using Auth.Dto;
 using Auth.Models;
 using Auth.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Auth.Controllers
 {
