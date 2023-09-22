@@ -25,22 +25,20 @@ namespace Auth.Services
 		private readonly List<User> _users = [.. authContext.Users];
 		private readonly string issuer = "http://localhost:5000";
 		private readonly string audience = "http://localhost:5000";
-		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? "MitkoDo secret key is something veeeery long hsjidhfksdhfldiskhfliksdhgfiksdhfkihsdikufhsdikuhfsdkhfjksdhgf"))];
+		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 16))))];
 
-		private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+		private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
 		{
 			using var hmac = new HMACSHA512();
 			passwordSalt = hmac.Key;
 			passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
 		}
 
-		private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+		private static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
 		{
-			using (var hmac = new HMACSHA512(passwordSalt))
-			{
-				var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-				return computedHash.SequenceEqual(passwordHash);
-			}
+			using var hmac = new HMACSHA512(passwordSalt);
+			var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+			return computedHash.SequenceEqual(passwordHash);
 		}
 
 		private string CreateToken(User user)
@@ -133,18 +131,18 @@ namespace Auth.Services
 
 		public bool ValidateToken(string token)
 		{
-			bool isValid = ValidateToken(token, issuer, audience, out JwtSecurityToken jwt);
+			bool isValid = ValidateToken(token, issuer, audience, out _);
 			return isValid;
 		}
 
 		public int DeleteUser (string id)
 		{
-			User? userFinded = GetUserById(id);
-			if (userFinded == null)
+			User? userFound = GetUserById(id);
+			if (userFound == null)
 			{
 				return StatusCodes.Status404NotFound;
 			}
-			_authContext.Users?.Remove(userFinded);
+			_authContext.Users?.Remove(userFound);
 			_authContext.SaveChanges();
 			return StatusCodes.Status200OK;
 		}
