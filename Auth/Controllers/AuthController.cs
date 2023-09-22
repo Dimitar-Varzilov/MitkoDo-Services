@@ -12,7 +12,7 @@ namespace Auth.Controllers
 		private readonly IAuthService _authService = authService;
 
 		[HttpGet("{id}")]
-		public ActionResult Get(string id)
+		public IActionResult Get(string id)
 		{
 			User? userFound = _authService.GetUserById(id);
 			if (userFound == null)
@@ -23,29 +23,36 @@ namespace Auth.Controllers
 		}
 
 		[HttpPost("register")]
-		public int Register(RegisterDto request)
+		public IActionResult Register(RegisterDto request)
 		{
-			return _authService.RegisterUser(request);
+			int response = _authService.RegisterUser(request);
+			if (response == StatusCodes.Status409Conflict) return BadRequest("Email is already registered");
+			return Ok("User created successfully");
 		}
 
 
 		[HttpPost("login")]
-		public string Login(LoginDto request)
+		public IActionResult Login(LoginDto request)
 		{
-			return _authService.LoginUser(request);
+			string response = _authService.LoginUser(request);
+			if (response == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
+			if (response == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
+			return Ok(response);
 		}
 
 		[HttpPost("verifyToken")]
-		public bool VerifyToken([FromBody] VerifyTokenDto prop)
+		public IActionResult ValidateToken([FromBody] ValidateTokenDto prop)
 		{
 			string token = prop.Token;
-			return _authService.ValidateToken(token);
+			return _authService.ValidateToken(token) ? Ok() : BadRequest();
 		}
 
 		[HttpDelete("{id}")]
-		public int Delete(string id)
+		public IActionResult Delete(string id)
 		{
-			return _authService.DeleteUser(id);
+			int response = _authService.DeleteUser(id);
+			if (response == StatusCodes.Status404NotFound) return NotFound();
+			return Ok("User successfully deleted");
 		}
 
 	}
