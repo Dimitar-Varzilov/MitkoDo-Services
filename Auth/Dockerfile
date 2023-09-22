@@ -3,8 +3,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-#EXPOSE 7145
-EXPOSE 5170 
+EXPOSE 7145
+EXPOSE 5170
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -22,5 +22,3 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Auth.dll"]
-#ENV "ASPNETCORE_HTTPS_PORTS" "7145",
-ENV "ASPNETCORE_HTTP_PORTS" "5170"

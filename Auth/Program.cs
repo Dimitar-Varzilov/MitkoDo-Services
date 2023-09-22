@@ -8,8 +8,6 @@ namespace Auth
 {
 	public class Program
 	{
-		public static List<User> Users = new();
-
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
@@ -20,12 +18,12 @@ namespace Auth
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
+			bool envIsDev = builder.Environment.IsDevelopment();
 
 			//Custom services
-			string dbString = builder.Environment.IsDevelopment() ? "AuthDb-dev" : "AuthDb";
-			//builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
-			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDb-dev")));
-			builder.Services.AddSingleton<IAuthService, AuthService>();
+			string dbString = envIsDev ? "AuthDb-dev" : "AuthDb";
+			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			builder.Services.AddScoped<IAuthService, AuthService>();
 			var mapperConfig = new MapperConfiguration(mc =>
 			{
 				mc.AddProfile(new AutoMapperProfile());
@@ -41,21 +39,21 @@ namespace Auth
 			//	db.Database.Migrate(); // This is needed to ensure the db is in the latest version.
 			//}
 
-			using (var scope = app.Services.CreateScope())
-			{
-				var authContext = scope.ServiceProvider.GetRequiredService<AuthContext>();
-				authContext.Database.EnsureCreated();
-				authContext.Seed();
-			}
+			//using (var scope = app.Services.CreateScope())
+			//{
+			//	var authContext = scope.ServiceProvider.GetRequiredService<AuthContext>();
+			//	authContext.Database.EnsureCreated();
+			//	authContext.Seed();
+			//}
 
 			// Configure the HTTP request pipeline.
-			if (app.Environment.IsDevelopment())
+			if (envIsDev)
 			{
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
 
-			//app.UseHttpsRedirection();
+			app.UseHttpsRedirection();
 
 			app.UseAuthorization();
 
