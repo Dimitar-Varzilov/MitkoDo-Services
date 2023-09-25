@@ -1,7 +1,7 @@
-using Auth;
-using Auth.Models;
+using Auth.Data;
 using Auth.Services;
 using AutoMapper;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Auth
@@ -30,6 +30,21 @@ namespace Auth
 			});
 			IMapper mapper = mapperConfig.CreateMapper();
 			builder.Services.AddSingleton(mapper);
+
+			builder.Services.AddMassTransit(config =>
+			{
+				//x.AddConsumer<MyConsumer>();
+
+				config.UsingRabbitMq((busContext, cfg) =>
+				{
+					var uri = new Uri(builder.Configuration["ServiceBus:Uri"]);
+					cfg.Host(uri, h =>
+					{
+						h.Username(builder.Configuration["ServiceBus:Username"]);
+						h.Password(builder.Configuration["ServiceBus:Password"]);
+					});
+				});
+			});
 
 			var app = builder.Build();
 

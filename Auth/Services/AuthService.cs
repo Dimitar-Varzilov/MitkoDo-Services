@@ -1,4 +1,5 @@
-﻿using Auth.Dto;
+﻿using Auth.Data;
+using Auth.Dto;
 using Auth.Models;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;

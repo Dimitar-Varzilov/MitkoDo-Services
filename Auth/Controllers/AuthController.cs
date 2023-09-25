@@ -1,15 +1,17 @@
 using Auth.Dto;
 using Auth.Models;
 using Auth.Services;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]
-	public class AuthController(IAuthService authService) : ControllerBase
+	public class AuthController(IAuthService authService,IPublishEndpoint publishEndpoint) : ControllerBase
 	{
 		private readonly IAuthService _authService = authService;
+		private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
 		[HttpGet("{id}")]
 		public IActionResult Get(string id)
@@ -23,11 +25,16 @@ namespace Auth.Controllers
 		}
 
 		[HttpPost("register")]
-		public IActionResult Register(RegisterDto request)
+		//public IActionResult Register(RegisterDto request)
+		//{
+		//	int response = _authService.RegisterUser(request);
+		//	if (response == StatusCodes.Status409Conflict) return BadRequest("Email is already registered");
+		//	return Ok("User created successfully");
+		//}
+		public async Task<IActionResult> Register(RegisterDto user)
 		{
-			int response = _authService.RegisterUser(request);
-			if (response == StatusCodes.Status409Conflict) return BadRequest("Email is already registered");
-			return Ok("User created successfully");
+			await _publishEndpoint.Publish(user);
+			return Ok("User created successfully2");
 		}
 
 
