@@ -12,11 +12,13 @@ namespace Auth.Services
 	public interface IAuthService
 	{
 		User? GetUserById(string id);
+		User? GetUserByEmail(string email);
 		int RegisterUser(RegisterDto user);
 		string LoginUser(LoginDto user);
-		User? GetUserByEmail(string email);
-		bool ValidateToken (string token);
-		int DeleteUser (string id);
+		bool ValidateToken(string token);
+		string InvalidateToken(string token);
+
+		int DeleteUser(string id);
 	}
 	public class AuthService(IMapper mapper, AuthContext authContext, IConfiguration configuration) : IAuthService
 	{
@@ -41,7 +43,7 @@ namespace Auth.Services
 			return computedHash.SequenceEqual(passwordHash);
 		}
 
-		private string CreateToken(User user)
+		private string CreateToken(User user, DateTime expires)
 		{
 			List<Claim> claims =
 			[
@@ -50,7 +52,7 @@ namespace Auth.Services
 			];
 
 			var cred = new SigningCredentials(securityKeys[0], SecurityAlgorithms.HmacSha512Signature);
-			var token = new JwtSecurityToken(claims: claims, expires: DateTime.UtcNow.AddDays(1), signingCredentials: cred, issuer: issuer, audience: audience);
+			var token = new JwtSecurityToken(claims: claims, expires: expires, signingCredentials: cred, issuer: issuer, audience: audience);
 			var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 			return jwt;
 		}
@@ -83,6 +85,7 @@ namespace Auth.Services
 				return false;
 			}
 		}
+
 
 		public User? GetUserById(string id)
 		{
@@ -124,7 +127,7 @@ namespace Auth.Services
 			if (!VerifyPasswordHash(request.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
-			string token = CreateToken(userFromDb);
+			string token = CreateToken(userFromDb, DateTime.UtcNow.AddHours(1));
 
 			return token;
 		}
@@ -135,7 +138,7 @@ namespace Auth.Services
 			return isValid;
 		}
 
-		public int DeleteUser (string id)
+		public int DeleteUser(string id)
 		{
 			User? userFound = GetUserById(id);
 			if (userFound == null)
@@ -145,6 +148,11 @@ namespace Auth.Services
 			_authContext.Users?.Remove(userFound);
 			_authContext.SaveChanges();
 			return StatusCodes.Status200OK;
+		}
+
+		public string InvalidateToken(string token)
+		{
+			return CreateToken(new User(), DateTime.UtcNow.AddDays(-1));
 		}
 	}
 }
