@@ -8,7 +8,7 @@ namespace Auth.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]
-	public class AuthController(IAuthService authService,IPublishEndpoint publishEndpoint) : ControllerBase
+	public class AuthController(IAuthService authService, IPublishEndpoint publishEndpoint) : ControllerBase
 	{
 		private readonly IAuthService _authService = authService;
 		private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;

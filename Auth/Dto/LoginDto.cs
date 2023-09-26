@@ -1,5 +1,4 @@
 ﻿using Auth.Interfaces;
-using Auth.Models;
 
 namespace Auth.Dto
 {
