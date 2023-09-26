@@ -8,51 +8,82 @@ namespace Tasks.Services
 
 	public interface ITaskService
 	{
-		CustomTask? GetTaskById(string id);
-		Task<int> AddTask(CustomTaskDto task);
-		string EditTask(string id, CustomTask task);
-		int AddSubTask(SubTask task);
-		string EditSubTask(string id, SubTask task);
-		int DeleteTask(string id);
+		CustomTask? GetTaskById(int id);
+		Task<CustomTask> AddTask(CustomTaskDto task);
+		Task<CustomTask?> EditTask(int id, CustomTask task);
+		Task<SubTask?> AddSubTask(int taskId, AddSubTaskDto task);
+		Task<SubTask> EditSubTask(int id, SubTask task);
+		Task<bool> DeleteTask(int id);
 	}
 	public class TaskService(IMapper mapper, TaskContext taskContext) : ITaskService
 	{
 		private readonly IMapper _mapper = mapper;
 		private readonly TaskContext _taskContext = taskContext;
-		private readonly List<CustomTask> _tasks = [.. taskContext.Tasks];
-		private readonly List<SubTask> _subTasks = [.. taskContext.SubTasks];
 
-		public int AddSubTask(SubTask task)
+		public async Task<SubTask?> AddSubTask(int taskId, AddSubTaskDto task)
 		{
-			throw new NotImplementedException();
-		}
-
-		public async Task<int> AddTask(CustomTaskDto task)
-		{
-			Console.WriteLine(task.Title);
-			_taskContext.Add(_mapper.Map<CustomTask>(task));
+			CustomTask? customTask = GetTaskById(taskId);
+			if (customTask == null)
+			{
+				return null;
+			}
+			SubTask newSubTask = _mapper.Map<SubTask>(task);
+			_taskContext.Add(newSubTask);
 			await _taskContext.SaveChangesAsync();
-			return (int)TaskStatus.Created;
+			return newSubTask;
 		}
 
-		public int DeleteTask(string id)
+		public async Task<CustomTask> AddTask(CustomTaskDto task)
 		{
-			throw new NotImplementedException();
+			CustomTask newTask = _mapper.Map<CustomTask>(task);
+			_taskContext.Add(newTask);
+			await _taskContext.SaveChangesAsync();
+			return newTask;
 		}
 
-		public string EditSubTask(string id, SubTask task)
+		public async Task<bool> DeleteTask(int id)
 		{
-			throw new NotImplementedException();
+			CustomTask? taskFound = GetTaskById(id);
+			if (taskFound == null)
+			{
+				return false;
+			}
+			_taskContext.Remove(taskFound);
+			await _taskContext.SaveChangesAsync();
+			return true;
 		}
 
-		public string EditTask(string id, CustomTask task)
+		public async Task<SubTask?> EditSubTask(int id, SubTask task)
 		{
-			throw new NotImplementedException();
+			return null;
+
 		}
 
-		public CustomTask? GetTaskById(string id)
+		public async Task<CustomTask?> EditTask(int id, CustomTask task)
 		{
-			throw new NotImplementedException();
+			CustomTask? taskFound = GetTaskById(id);
+			if (taskFound == null)
+			{
+				return null;
+			}
+			CustomTask newTask = _mapper.Map<CustomTask>(task);
+			_taskContext.Entry(taskFound).CurrentValues.SetValues(newTask);
+			await _taskContext.SaveChangesAsync();
+			return newTask;
+		}
+
+		public CustomTask? GetTaskById(int id)
+		{
+			try
+			{
+				return _taskContext.Tasks.First(task => task.TaskId == id);
+
+			}
+			catch (Exception)
+			{
+
+				return null;
+			}
 		}
 	}
 }

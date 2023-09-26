@@ -12,6 +12,8 @@ namespace Tasks
 			CreateMap<CustomTaskDto, CustomTask>();
 			CreateMap<SubTask, SubTaskDto>();
 			CreateMap<SubTaskDto, SubTask>();
+			CreateMap<AddSubTaskDto, SubTask>();
+			CreateMap<SubTask, AddSubTaskDto>();
 		}
 	}
 }

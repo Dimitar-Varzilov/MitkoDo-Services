@@ -11,22 +11,39 @@ namespace Tasks.Controllers
 	{
 		private readonly ITaskService _taskService = taskService;
 
-		[HttpGet]
-		public OkObjectResult GetAllTask()
-		{
-			return Ok("Got all users");
-		}
-
 		[HttpGet("{id}")]
-		public OkObjectResult GetTaskById(int id)
+		public IActionResult GetTaskById(int id)
 		{
-			return Ok($"Got user with id {id}");
+			CustomTask? foundTask = _taskService.GetTaskById(id);
+			return foundTask == null ? NotFound("Task Not Found") : Ok(foundTask);
 		}
 
-		[HttpPost]
-		public Task<int> AddTask(CustomTaskDto task)
+		[HttpPost("addTask")]
+		public async Task<IActionResult> AddTask(CustomTaskDto task)
 		{
-			return _taskService.AddTask(task);
+			CustomTask newTask = await _taskService.AddTask(task);
+			return Ok(newTask);
+		}
+
+		[HttpPost("addSubtask/{taskId}")]
+		public async Task<ActionResult<SubTask?>> AddSubTask(int taskId, AddSubTaskDto subTask)
+		{
+			SubTask? newTask = await _taskService.AddSubTask(taskId, subTask);
+			return newTask == null ? NotFound("Task Not Found") : Ok(newTask);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> EditTask(int id, CustomTask task)
+		{
+			CustomTask? customTask = await _taskService.EditTask(id, task);
+			return customTask == null ? NotFound("Task Not Found") : Ok(customTask);
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteTask(int id)
+		{
+			bool taskDeleted = await _taskService.DeleteTask(id);
+			return taskDeleted ? Ok() : NotFound();
 		}
 	}
 }
