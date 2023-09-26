@@ -1,22 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tasks.Models;
 
-namespace Tasks.Models
+namespace Tasks.Dto
 {
-    public interface ISubTask
+	public class SubTaskDto
 	{
-		int SubTaskId { get; set; }
-		string Title { get; set; }
-		string Description { get; set; }
-		//string[] Photos { get; set; }
-		int PicsRequired { get; set; }
-		int NotesRequired { get; set; }
-		bool IsCompleted { get; set; }
-		ICollection<Note> NoteId { get; set; }
-	}
-	public class SubTask : ISubTask
-	{
-		[Key]
-		public int SubTaskId { get; set; }
+		public int? SubTaskId { get; set; }
 		[Required]
 		public string Title { get; set; } = string.Empty;
 		[Required]
