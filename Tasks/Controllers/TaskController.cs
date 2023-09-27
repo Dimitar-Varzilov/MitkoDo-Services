@@ -18,25 +18,34 @@ namespace Tasks.Controllers
 			return foundTask == null ? NotFound("Task Not Found") : Ok(foundTask);
 		}
 
-		[HttpPost("addTask")]
+		[HttpPost]
 		public async Task<IActionResult> AddTask(CustomTaskDto task)
 		{
-			CustomTask newTask = await _taskService.AddTask(task);
+			CustomTaskDto newTask = await _taskService.AddTask(task);
 			return Ok(newTask);
 		}
 
-		[HttpPost("addSubtask/{taskId}")]
-		public async Task<ActionResult<SubTask?>> AddSubTask(int taskId, AddSubTaskDto subTask)
+
+		[HttpPut("{id}")]
+		public async Task<IActionResult> EditTask(int id, CustomTaskDto task)
 		{
-			SubTask? newTask = await _taskService.AddSubTask(taskId, subTask);
+			CustomTaskDto? customTask = await _taskService.EditTask(id, task);
+			return customTask == null ? NotFound("Task Not Found") : Ok(customTask);
+		}
+
+		[HttpPost("subtask/add/{taskId}")]
+		public async Task<ActionResult<SubTaskDto?>> AddSubTask(int taskId, SubTaskDto subTask)
+		{
+			SubTaskDto? newTask = await _taskService.AddSubTask(taskId, subTask);
 			return newTask == null ? NotFound("Task Not Found") : Ok(newTask);
 		}
 
-		[HttpPut("{id}")]
-		public async Task<IActionResult> EditTask(int id, CustomTask task)
+
+		[HttpPut("subtask/edit/{subTaskId}")]
+		public async Task<ActionResult<SubTaskDto?>> EditSubTask(int subTaskId, SubTaskDto subTask)
 		{
-			CustomTask? customTask = await _taskService.EditTask(id, task);
-			return customTask == null ? NotFound("Task Not Found") : Ok(customTask);
+			SubTaskDto? editedSubTask = await _taskService.EditSubTask(subTaskId, subTask);
+			return editedSubTask == null ? NotFound("SubTask Not Found") : Ok(editedSubTask);
 		}
 
 		[HttpDelete("{id}")]

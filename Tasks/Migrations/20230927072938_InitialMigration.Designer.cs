@@ -12,7 +12,7 @@ using Tasks.Data;
 namespace Tasks.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20230926121518_InitialMigration")]
+    [Migration("20230927072938_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -55,16 +55,10 @@ namespace Tasks.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MemberId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SubTaskId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -132,6 +126,9 @@ namespace Tasks.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("NoteId")
+                        .HasColumnType("int");
+
                     b.Property<int>("NotesRequired")
                         .HasColumnType("int");
 
@@ -152,16 +149,25 @@ namespace Tasks.Migrations
                     b.ToTable("SubTasks");
                 });
 
-            modelBuilder.Entity("Tasks.Models.UserDto", b =>
+            modelBuilder.Entity("Tasks.Models.User", b =>
                 {
                     b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("MemberId")
+                        .HasColumnType("int");
+
                     b.HasKey("UserId");
+
+                    b.HasIndex("MemberId")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -184,7 +190,7 @@ namespace Tasks.Migrations
             modelBuilder.Entity("Tasks.Models.Note", b =>
                 {
                     b.HasOne("Tasks.Models.SubTask", "SubTask")
-                        .WithMany("NoteId")
+                        .WithMany("Notes")
                         .HasForeignKey("SubTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -203,11 +209,11 @@ namespace Tasks.Migrations
                     b.Navigation("Task");
                 });
 
-            modelBuilder.Entity("Tasks.Models.UserDto", b =>
+            modelBuilder.Entity("Tasks.Models.User", b =>
                 {
                     b.HasOne("Tasks.Models.Member", "Member")
                         .WithOne("User")
-                        .HasForeignKey("Tasks.Models.UserDto", "UserId")
+                        .HasForeignKey("Tasks.Models.User", "MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -227,7 +233,7 @@ namespace Tasks.Migrations
 
             modelBuilder.Entity("Tasks.Models.SubTask", b =>
                 {
-                    b.Navigation("NoteId");
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

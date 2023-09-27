@@ -11,7 +11,7 @@ namespace Tasks.Models
 		int PicsRequired { get; set; }
 		int NotesRequired { get; set; }
 		bool IsCompleted { get; set; }
-		ICollection<Note> NoteId { get; set; }
+		ICollection<Note> Notes { get; set; }
 	}
 	public class SubTask : ISubTask
 	{
@@ -31,6 +31,7 @@ namespace Tasks.Models
 		public int TaskId { get; set; }
 		public CustomTask Task { get; set; } = new CustomTask();
 
-		public virtual ICollection<Note> NoteId { get; set; } = [];
+		public int NoteId { get; set; }
+		public ICollection<Note> Notes { get; set; } = [];
 	}
 }

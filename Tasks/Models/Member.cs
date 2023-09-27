@@ -10,8 +10,8 @@ namespace Tasks.Models
 		public MemberRole Role { get; set; }
 
 		public int TaskId { get; set; }
-		public virtual ICollection<CustomTask> Tasks { get; set; } = [];
+		public ICollection<CustomTask> Tasks { get; set; } = [];
 
-		public virtual UserDto User { get; set; } = new UserDto();
+		public User User { get; set; } = new User();
 	}
 }

@@ -10,6 +10,6 @@ namespace Tasks.Data
 		public DbSet<SubTask> SubTasks { get; set; }
 		public DbSet<Member> Members { get; set; }
 		public DbSet<Note> Notes { get; set; }
-		public DbSet<UserDto> Users { get; set; }
+		public DbSet<User> Users { get; set; }
 	}
 }

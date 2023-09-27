@@ -27,10 +27,8 @@ namespace Tasks.Models
 		[Required]
 		public DateTime DueDate { get; set; }
 
-		public int SubTaskId { get; set; }
-		public virtual ICollection<SubTask> SubTasks { get; set; } = [];
+		public ICollection<SubTask> SubTasks { get; set; } = [];
 
-		public int MemberId { get; set; }
-		public virtual ICollection<Member> Members { get; set; } = [];
+		public ICollection<Member> Members { get; set; } = [];
 	}
 }

@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tasks.Models
 {
-	public class UserDto
+	public class User
 	{
 		[Key]
-		[ForeignKey("Member")]
 		public int UserId { get; set; }
 		public string Email { get; set; } = null!;
 
+		public int MemberId { get; set; }
 		public virtual Member Member { get; set; } = new Member();
 	}
 }
