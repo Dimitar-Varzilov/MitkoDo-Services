@@ -31,5 +31,18 @@ namespace Tasks
 				return CustomTaskStatus.Completed;
 			return CustomTaskStatus.Running;
 		}
+
+		public static bool CalculateSubTaskStatus(SubTask SubTask)
+		{
+			bool result = SubTask.Notes.Count >= SubTask.NotesRequired && SubTask.Pictures.Count >= SubTask.PicsRequired;
+			return result;
+		}
+
+		public static bool IsTaskActive (CustomTask customTask)
+		{
+			DateTime now = DateTime.Now;
+			bool result = customTask.StartDate < now && customTask.DueDate > now;
+			return result;
+		}
 	}
 }

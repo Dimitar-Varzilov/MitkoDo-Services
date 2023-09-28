@@ -7,11 +7,11 @@ namespace Tasks.Models
 		int SubTaskId { get; set; }
 		string Title { get; set; }
 		string Description { get; set; }
-		//string[] Photos { get; set; }
 		int PicsRequired { get; set; }
 		int NotesRequired { get; set; }
 		bool IsCompleted { get; set; }
 		ICollection<Note> Notes { get; set; }
+		ICollection<Picture> Pictures{ get; set; }
 	}
 	public class SubTask : ISubTask
 	{
@@ -21,7 +21,6 @@ namespace Tasks.Models
 		public string Title { get; set; } = string.Empty;
 		[Required]
 		public string Description { get; set; } = string.Empty;
-		//public string[] Photos { get; set; } = [];
 		public int PicsRequired { get; set; }
 		[Required]
 		[Range(1, int.MaxValue)]
@@ -31,7 +30,7 @@ namespace Tasks.Models
 		public int TaskId { get; set; }
 		public CustomTask Task { get; set; } = new CustomTask();
 
-		public int NoteId { get; set; }
 		public ICollection<Note> Notes { get; set; } = [];
+		public ICollection<Picture> Pictures { get; set; } = [];
 	}
 }

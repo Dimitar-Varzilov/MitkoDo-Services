@@ -11,13 +11,6 @@ namespace Tasks.Controllers
 	{
 		private readonly ITaskService _taskService = taskService;
 
-		[HttpGet("{id}")]
-		public IActionResult GetTaskById(int id)
-		{
-			CustomTask? foundTask = _taskService.GetTaskById(id);
-			return foundTask == null ? NotFound("Task Not Found") : Ok(foundTask);
-		}
-
 		[HttpPost]
 		public async Task<IActionResult> AddTask(CustomTaskDto task)
 		{
@@ -36,7 +29,7 @@ namespace Tasks.Controllers
 		[HttpPost("subtask/add/{taskId}")]
 		public async Task<ActionResult<SubTaskDto?>> AddSubTask(int taskId, SubTaskDto subTask)
 		{
-			SubTask? newSubTask = await _taskService.AddSubTask(taskId, subTask);
+			SubTaskDto? newSubTask = await _taskService.AddSubTask(taskId, subTask);
 			return newSubTask == null ? NotFound("Task Not Found") : Ok(newSubTask);
 		}
 
@@ -44,7 +37,7 @@ namespace Tasks.Controllers
 		[HttpPut("subtask/edit/{subTaskId}")]
 		public async Task<ActionResult<SubTaskDto?>> EditSubTask(int subTaskId, SubTaskDto subTask)
 		{
-			SubTask? editedSubTask = await _taskService.EditSubTask(subTaskId, subTask);
+			SubTaskDto? editedSubTask = await _taskService.EditSubTask(subTaskId, subTask);
 			return editedSubTask == null ? NotFound("SubTask Not Found") : Ok(editedSubTask);
 		}
 
@@ -53,6 +46,14 @@ namespace Tasks.Controllers
 		{
 			bool taskDeleted = await _taskService.DeleteTask(id);
 			return taskDeleted ? Ok() : NotFound();
+		}
+
+		[HttpPost("subtask/addImage/{subTaskId}")]
+		public async Task<IActionResult> AddImage(int subTaskId, List<IFormFile> images)
+		{
+			if (images.Count == 0) return BadRequest("No Image Found");
+			await _taskService.AddSubTaskImage(subTaskId, images);
+			return Ok($"Image{(images.Count > 1 ? "s" : "")} successfully uploaded");
 		}
 	}
 }
