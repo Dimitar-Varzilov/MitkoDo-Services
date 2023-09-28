@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tasks.Enums;
 
 namespace Tasks.Models
 {
-    public interface ITask
+	public interface ITask
 	{
 		int TaskId { get; set; }
 		string Title { get; set; }
 		string Description { get; set; }
-		TaskStatus Status { get; set; }
+		CustomTaskStatus Status { get; set; }
 		DateTime StartDate { get; set; }
 		DateTime DueDate { get; set; }
 		ICollection<SubTask> SubTasks { get; set; }
@@ -21,11 +22,11 @@ namespace Tasks.Models
 		public string Title { get; set; } = string.Empty;
 		public string Description { get; set; } = string.Empty;
 		[Required]
-		public TaskStatus Status { get; set; } = TaskStatus.WaitingToRun;
+		public CustomTaskStatus Status { get; set; } = CustomTaskStatus.Upcoming;
 		[Required]
-		public DateTime StartDate { get; set; }
+		public DateTime StartDate { get; set; } = DateTime.Now;
 		[Required]
-		public DateTime DueDate { get; set; }
+		public DateTime DueDate { get; set; } = DateTime.Now.AddDays(1);
 
 		public ICollection<SubTask> SubTasks { get; set; } = [];
 

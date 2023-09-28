@@ -8,10 +8,11 @@ namespace Tasks.Services
 
 	public interface ITaskService
 	{
-		Task<CustomTaskDto> AddTask(CustomTaskDto task);
-		Task<CustomTaskDto?> EditTask(int taskId, CustomTaskDto task);
-		Task<SubTaskDto?> AddSubTask(int subTaskId, SubTaskDto subTask);
-		Task<SubTaskDto?> EditSubTask(int subTaskId, SubTaskDto subTask);
+		Task<CustomTask> AddTask(CustomTaskDto task);
+		//Task<EditedCustomTaskDto?> EditTask(int taskId, CustomTaskDto task);
+		Task<CustomTask?> EditTask(int taskId, CustomTaskDto task);
+		Task<SubTask?> AddSubTask(int subTaskId, SubTaskDto subTask);
+		Task<SubTask?> EditSubTask(int subTaskId, SubTaskDto subTask);
 		Task<bool> DeleteTask(int taskId);
 		CustomTask? GetTaskById(int taskId);
 		SubTask? GetSubTaskById(int subTaskId);
@@ -21,28 +22,27 @@ namespace Tasks.Services
 		private readonly IMapper _mapper = mapper;
 		private readonly TaskContext _taskContext = taskContext;
 
-		public async Task<CustomTaskDto> AddTask(CustomTaskDto task)
+		public async Task<CustomTask> AddTask(CustomTaskDto task)
 		{
 			CustomTask newTask = _mapper.Map<CustomTaskDto, CustomTask>(task);
 			_taskContext.Add(newTask);
 			await _taskContext.SaveChangesAsync();
-			return _mapper.Map<CustomTaskDto>(newTask);
+			return newTask;
 		}
 
-		public async Task<CustomTaskDto?> EditTask(int taskId, CustomTaskDto task)
+		public async Task<CustomTask?> EditTask(int taskId, CustomTaskDto task)
 		{
 			CustomTask? taskFound = GetTaskById(taskId);
 			if (taskFound == null)
 			{
 				return null;
 			}
-			CustomTaskDto newTask = _mapper.Map<CustomTaskDto, CustomTaskDto>(task);
-			_taskContext.Entry(taskFound).CurrentValues.SetValues(newTask);
+			_taskContext.Entry(taskFound).CurrentValues.SetValues(task);
 			await _taskContext.SaveChangesAsync();
-			return _mapper.Map<CustomTaskDto>(newTask);
+			return taskFound;
 		}
 
-		public async Task<SubTaskDto?> AddSubTask(int taskId, SubTaskDto subTaskDto)
+		public async Task<SubTask?> AddSubTask(int taskId, SubTaskDto subTaskDto)
 		{
 			CustomTask? customTask = GetTaskById(taskId);
 			if (customTask == null)
@@ -50,25 +50,24 @@ namespace Tasks.Services
 				return null;
 			}
 			SubTask newSubTask = _mapper.Map<SubTask>(subTaskDto);
+			newSubTask.TaskId = customTask.TaskId;
 			customTask.SubTasks.Add(newSubTask);
+			customTask.Status = Utilities.CalculateTaskStatus(customTask);
 			await _taskContext.SaveChangesAsync();
-			return subTaskDto;
+			return newSubTask;
 		}
 
-		public async Task<SubTaskDto?> EditSubTask(int subTaskId, SubTaskDto subTaskDto)
+		public async Task<SubTask?> EditSubTask(int subTaskId, SubTaskDto subTask)
 		{
 			SubTask? subTaskFound = GetSubTaskById(subTaskId);
 			if (subTaskFound == null)
 			{
 				return null;
 			}
-			SubTaskDto newSubTask = _mapper.Map<SubTaskDto>(subTaskDto);
-			_taskContext.Entry(subTaskFound).CurrentValues.SetValues(newSubTask);
+			_taskContext.Entry(subTaskFound).CurrentValues.SetValues(subTask);
 			await _taskContext.SaveChangesAsync();
-			return subTaskDto;
+			return subTaskFound;
 		}
-
-
 
 		public async Task<bool> DeleteTask(int id)
 		{
@@ -98,7 +97,8 @@ namespace Tasks.Services
 		{
 			try
 			{
-				return _taskContext.Tasks.Where(task => task.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).SelectMany(task => task.SubTasks).First(subTask => subTask.SubTaskId == subTaskId);
+				return _taskContext.SubTasks.First(subTask => subTask.SubTaskId == subTaskId);
+				//return _taskContext.Tasks.Where(task => task.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).SelectMany(task => task.SubTasks).First(subTask => subTask.SubTaskId == subTaskId);
 			}
 			catch (Exception)
 			{

@@ -9,7 +9,13 @@ namespace Tasks
 		public AutoMapperProfile()
 		{
 			CreateMap<CustomTask, CustomTaskDto>();
+			CreateMap<CustomTask, EditedCustomTaskDto>();
+			CreateMap<EditedCustomTaskDto, CustomTask>();
+
 			CreateMap<CustomTaskDto, CustomTask>();
+			CreateMap<CustomTaskDto, EditedCustomTaskDto>();
+
+			CreateMap<EditedCustomTaskDto, CustomTaskDto>();
 			CreateMap<SubTask, SubTaskDto>();
 			CreateMap<SubTaskDto, SubTask>();
 		}
