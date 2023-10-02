@@ -1,9 +1,11 @@
 ﻿using AuthenticationAPI.Data;
 using AuthenticationAPI.Dto;
+using AuthenticationAPI.Enums;
 using AuthenticationAPI.Models;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -13,7 +15,7 @@ namespace AuthenticationAPI.Services
 	public interface IAuthService
 	{
 		User? GetUserById(Guid userId);
-		UserDto? RegisterUser(RegisterDto user);
+		Task<UserDto?> RegisterUser(RegisterDto user, UserRole userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
 		bool ValidateToken(string token);
 		string InvalidateToken(string token);
@@ -24,7 +26,7 @@ namespace AuthenticationAPI.Services
 	{
 		private readonly IMapper _mapper = mapper;
 		private readonly AuthContext _authContext = authContext;
-		private readonly string issuer = "http://localhost:5000";
+		private readonly string issuer = $"http://localhost:7145";
 		private readonly string audience = "http://localhost:5000";
 		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 16))))];
 
@@ -87,15 +89,31 @@ namespace AuthenticationAPI.Services
 
 		public User? GetUserById(Guid id)
 		{
-			return _authContext.Users.First(user => user.UserId == id);
+			try
+			{
+				return _authContext.Users.First(user => user.UserId == id);
+			}
+			catch (Exception)
+			{
+
+				return null;
+			}
 		}
 
 		User? GetUserByEmail(string email)
 		{
-			return _authContext.Users.First(user => user.Email == email);
+			try
+			{
+				return _authContext.Users.First(user => user.Email == email);
+			}
+			catch (Exception)
+			{
+
+				return null;
+			}
 		}
 
-		public UserDto? RegisterUser(RegisterDto dto)
+		public async Task<UserDto?> RegisterUser(RegisterDto dto, UserRole userRole = UserRole.MEMBER)
 		{
 			var foundUser = GetUserByEmail(dto.Email);
 			if (foundUser != null)
@@ -108,11 +126,12 @@ namespace AuthenticationAPI.Services
 				UserId = Guid.NewGuid(),
 				Email = dto.Email,
 				PasswordHash = passwordHash,
-				PasswordSalt = passwordSalt
+				PasswordSalt = passwordSalt,
+				Role = userRole
 			};
 
 			_authContext.Users.Add(newUser);
-			_authContext.SaveChanges();
+			await _authContext.SaveChangesAsync();
 
 			return _mapper.Map<UserDto>(newUser);
 		}
@@ -126,7 +145,7 @@ namespace AuthenticationAPI.Services
 			if (!VerifyPasswordHash(request.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
-			string token = CreateToken(userFromDb, DateTime.UtcNow.AddHours(1));
+			string token = CreateToken(userFromDb, DateTime.Now.AddHours(1));
 
 			return token;
 		}

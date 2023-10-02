@@ -12,6 +12,8 @@ namespace AuthenticationAPI
 			CreateMap<RegisterDto, User>();
 			CreateMap<LoginDto, User>();
 			CreateMap<User, LoginDto>();
+			CreateMap<User, UserDto>();
+			CreateMap<UserDto, User>();
 		}
 	}
 }

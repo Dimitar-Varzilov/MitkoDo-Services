@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthenticationAPI.Migrations
 {
     [DbContext(typeof(AuthContext))]
-    [Migration("20231002072956_Initial-Migration")]
+    [Migration("20231002100725_Initial-Migration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -42,6 +42,9 @@ namespace AuthenticationAPI.Migrations
                     b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId");
 
