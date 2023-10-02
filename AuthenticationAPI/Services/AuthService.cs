@@ -84,36 +84,10 @@ namespace AuthenticationAPI.Services
 			}
 		}
 
-		private User? GetUserById(Guid id)
-		{
-			try
-			{
-				return _authContext.Users.First(user => user.UserId == id);
-			}
-			catch (Exception)
-			{
-
-				return null;
-			}
-		}
-
-		private User? GetUserByEmail(string email)
-		{
-			try
-			{
-				return _authContext.Users.First(user => user.Email == email);
-			}
-			catch (Exception)
-			{
-
-				return null;
-			}
-		}
-
 		public async Task<UserDto?> RegisterUser(RegisterDto dto, UserRole userRole = UserRole.MEMBER)
 		{
-			var foundUser = GetUserByEmail(dto.Email);
-			if (foundUser != null)
+			User? user = _authContext.Users.FirstOrDefault(user => user.Email == dto.Email);
+			if (user != null)
 				return null;
 
 			CreatePasswordHash(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -135,14 +109,14 @@ namespace AuthenticationAPI.Services
 
 		public string LoginUser(LoginDto request)
 		{
-			var userFromDb = GetUserByEmail(request.Email);
-			if (userFromDb == null)
+			User? user = _authContext.Users.FirstOrDefault(user => user.Email == request.Email);
+			if (user == null)
 				return StatusCodes.Status404NotFound.ToString();
 
-			if (!VerifyPasswordHash(request.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
+			if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
-			string token = CreateToken(userFromDb, DateTime.Now.AddDays(30));
+			string token = CreateToken(user, DateTime.Now.AddDays(30));
 
 			return token;
 		}
