@@ -1,6 +1,5 @@
 using AuthenticationAPI.Dto;
 using AuthenticationAPI.Enums;
-using AuthenticationAPI.Models;
 using AuthenticationAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
