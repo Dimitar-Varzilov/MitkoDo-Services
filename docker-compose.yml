@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  authenticationapi:
+    image: ${DOCKER_REGISTRY-}authenticationapi
+    build:
+      context: .
+      dockerfile: Auth/Dockerfile
+
+  employeeapi:
+    image: ${DOCKER_REGISTRY-}employeeapi
+    build:
+      context: .
+      dockerfile: Employee/Dockerfile
+
