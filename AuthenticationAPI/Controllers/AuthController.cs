@@ -12,15 +12,6 @@ namespace AuthenticationAPI.Controllers
 	{
 		private readonly IAuthService _authService = authService;
 
-		[HttpGet("{id}")]
-		public IActionResult Get(Guid id)
-		{
-			User? userFound = _authService.GetUserById(id);
-			return (userFound == null)
-				? NotFound()
-				: Ok(userFound);
-		}
-
 		[HttpPost("register/employee")]
 		public async Task<ActionResult<UserDto>> Register(RegisterDto request)
 		{
@@ -57,13 +48,11 @@ namespace AuthenticationAPI.Controllers
 			return _authService.ValidateToken(token) ? Ok() : BadRequest();
 		}
 
-		[HttpDelete("{id}")]
-		public IActionResult Delete(Guid id)
+		[HttpPost("logout")]
+		public IActionResult Logout(ValidateTokenDto prop)
 		{
-			int response = _authService.DeleteUser(id);
-			if (response == StatusCodes.Status404NotFound) return NotFound();
-			return Ok("User successfully deleted");
+			string token = prop.Token;
+			return Ok(_authService.InvalidateToken(token));
 		}
-
 	}
 }

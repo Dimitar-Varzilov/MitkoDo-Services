@@ -14,13 +14,10 @@ namespace AuthenticationAPI.Services
 
 	public interface IAuthService
 	{
-		User? GetUserById(Guid userId);
 		Task<UserDto?> RegisterUser(RegisterDto user, UserRole userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
 		bool ValidateToken(string token);
 		string InvalidateToken(string token);
-
-		int DeleteUser(Guid userId);
 	}
 	public class AuthService(IMapper mapper, AuthContext authContext, IConfiguration configuration) : IAuthService
 	{
@@ -87,7 +84,7 @@ namespace AuthenticationAPI.Services
 			}
 		}
 
-		public User? GetUserById(Guid id)
+		private User? GetUserById(Guid id)
 		{
 			try
 			{
@@ -100,7 +97,7 @@ namespace AuthenticationAPI.Services
 			}
 		}
 
-		User? GetUserByEmail(string email)
+		private User? GetUserByEmail(string email)
 		{
 			try
 			{
@@ -145,27 +142,14 @@ namespace AuthenticationAPI.Services
 			if (!VerifyPasswordHash(request.Password, userFromDb.PasswordHash, userFromDb.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
-			string token = CreateToken(userFromDb, DateTime.Now.AddHours(1));
+			string token = CreateToken(userFromDb, DateTime.Now.AddDays(30));
 
 			return token;
 		}
 
 		public bool ValidateToken(string token)
 		{
-			bool isValid = ValidateToken(token, issuer, audience, out _);
-			return isValid;
-		}
-
-		public int DeleteUser(Guid id)
-		{
-			User? userFound = GetUserById(id);
-			if (userFound == null)
-			{
-				return StatusCodes.Status404NotFound;
-			}
-			_authContext.Users?.Remove(userFound);
-			_authContext.SaveChanges();
-			return StatusCodes.Status200OK;
+			return ValidateToken(token, issuer, audience, out _);
 		}
 
 		public string InvalidateToken(string token)
