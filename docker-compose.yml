@@ -1,15 +1,23 @@
 version: '3.4'
 
 services:
+  tasksapi:
+    image: ${DOCKER_REGISTRY-}tasksapi
+    build:
+      context: .
+      dockerfile: TasksAPI/Dockerfile
+
+
   authenticationapi:
     image: ${DOCKER_REGISTRY-}authenticationapi
     build:
       context: .
-      dockerfile: Auth/Dockerfile
+      dockerfile: AuthenticationAPI/Dockerfile
+
 
   employeeapi:
     image: ${DOCKER_REGISTRY-}employeeapi
     build:
       context: .
-      dockerfile: Employee/Dockerfile
+      dockerfile: EmployeeAPI/Dockerfile
 
