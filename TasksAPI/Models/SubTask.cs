@@ -4,15 +4,10 @@ namespace TasksAPI.Models
 {
 	public class SubTask
 	{
-		[Key]
 		public Guid SubTaskId { get; set; }
-		[Required]
 		public string Title { get; set; } = string.Empty;
-		[Required]
 		public string Description { get; set; } = string.Empty;
 		public int PicturesCountToBeCompleted { get; set; }
-		[Required]
-		[Range(1, int.MaxValue)]
 		public int NotesCountToBeCompleted { get; set; }
 		public bool IsCompleted { get; set; } = false;
 
