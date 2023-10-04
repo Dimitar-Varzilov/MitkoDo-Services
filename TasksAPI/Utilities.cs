@@ -35,5 +35,19 @@ namespace TasksAPI
 			bool result = toDo.StartDate < now && toDo.DueDate > now;
 			return result;
 		}
+
+		public static List<Guid> GenerateGuids(int count)
+		{
+			var guids = new List<Guid>();
+
+			for (int i = 0; i < count; i++)
+			{
+				guids.Add(Guid.NewGuid());
+			}
+
+			File.WriteAllLines("D:\\coding\\Diadraw\\MitkoDo\\20Guids.txt", guids.ConvertAll(x => x.ToString()));
+
+			return guids;
+		}
 	}
 }

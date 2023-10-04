@@ -12,8 +12,8 @@ using TasksAPI.Data;
 namespace TasksAPI.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20231002081852_Initial-Migration")]
-    partial class InitialMigration
+    [Migration("20231003230815_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,9 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
-                    b.Property<int>("EmployeeId")
+                    b.Property<Guid>("EmployeeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -44,16 +42,14 @@ namespace TasksAPI.Migrations
 
                     b.HasIndex("ToDoId");
 
-                    b.ToTable("Employee");
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Note", b =>
                 {
-                    b.Property<int>("NoteId")
+                    b.Property<Guid>("NoteId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NoteId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
@@ -71,11 +67,9 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.Picture", b =>
                 {
-                    b.Property<int>("PictureId")
+                    b.Property<Guid>("PictureId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PictureId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -88,7 +82,7 @@ namespace TasksAPI.Migrations
 
                     b.HasIndex("SubTaskId");
 
-                    b.ToTable("Picture");
+                    b.ToTable("Pictures");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.SubTask", b =>
@@ -101,30 +95,26 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
                     b.Property<int>("NotesCountToBeCompleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
                     b.Property<int>("PicturesCountToBeCompleted")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TaskId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("TaskToDoId")
-                        .HasColumnType("uniqueidentifier");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("ToDoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("SubTaskId");
 
-                    b.HasIndex("TaskToDoId");
+                    b.HasIndex("ToDoId");
 
                     b.ToTable("SubTasks");
                 });
@@ -157,7 +147,7 @@ namespace TasksAPI.Migrations
             modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
                     b.HasOne("TasksAPI.Models.ToDo", null)
-                        .WithMany("EmployeeIds")
+                        .WithMany("Employees")
                         .HasForeignKey("ToDoId");
                 });
 
@@ -177,13 +167,13 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.SubTask", b =>
                 {
-                    b.HasOne("TasksAPI.Models.ToDo", "Task")
+                    b.HasOne("TasksAPI.Models.ToDo", "Todo")
                         .WithMany("SubTasks")
-                        .HasForeignKey("TaskToDoId")
+                        .HasForeignKey("ToDoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Task");
+                    b.Navigation("Todo");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.SubTask", b =>
@@ -195,7 +185,7 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.ToDo", b =>
                 {
-                    b.Navigation("EmployeeIds");
+                    b.Navigation("Employees");
 
                     b.Navigation("SubTasks");
                 });

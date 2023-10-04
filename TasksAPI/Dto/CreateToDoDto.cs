@@ -11,5 +11,7 @@ namespace TasksAPI.Dto
 		public DateTime StartDate { get; set; } = DateTime.Now;
 		[Required]
 		public DateTime DueDate { get; set; } = DateTime.Now.AddDays(1);
+		[Required]
+		public IList<Guid> EmployeeIds { get; set; } = [];
 	}
 }

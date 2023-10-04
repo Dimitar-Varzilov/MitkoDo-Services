@@ -1,18 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TasksAPI.Dto
+﻿namespace TasksAPI.Dto
 {
 	public class SubTaskDto
 	{
-		[Required]
+		public Guid SubTaskId { get; set; }
 		public string Title { get; set; } = string.Empty;
-		[Required]
 		public string Description { get; set; } = string.Empty;
-		//public string[] Photos { get; set; } = [];
-		public int PicsRequired { get; set; }
-		[Required]
-		[Range(1, int.MaxValue)]
-		public int NotesRequired { get; set; }
-		public bool IsCompleted { get; set; } = false;
+		public bool IsComplete { get; set; } = false;
 	}
 }

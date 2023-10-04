@@ -15,7 +15,7 @@ namespace TasksAPI.Models
 		public DateTime DueDate { get; set; } = DateTime.Now.AddDays(1);
 
 		public IList<SubTask> SubTasks { get; set; } = [];
-		public IList<Employee> EmployeeIds { get; set; } = [];
+		public IList<Employee> Employees { get; set; } = [];
 
 	}
 }

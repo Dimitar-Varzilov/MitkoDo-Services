@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using TasksAPI.Data;
+﻿using TasksAPI.Data;
 using TasksAPI.Dto;
 using TasksAPI.Models;
 
@@ -8,101 +7,134 @@ namespace TasksAPI.Services
 
 	public interface ITaskService
 	{
-		Task<ToDo> AddTask(CreateToDoDto task);
+		IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds);
+		IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId);
+		Task<ToDoDto> AddTask(CreateToDoDto task);
 		Task<ToDo?> EditTask(Guid taskId, CreateToDoDto task);
-		Task<SubTaskDto?> AddSubTask(Guid subTaskId, SubTaskDto subTask);
-		Task<SubTaskDto?> EditSubTask(Guid subTaskId, SubTaskDto subTask);
+		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
+		Task<SubTaskDto?> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<bool> DeleteTask(Guid taskId);
 		Task<bool> AddSubTaskImage(Guid subTaskId, List<IFormFile> images);
 	}
-	public class TaskService(IMapper mapper, TaskContext taskContext, IWebHostEnvironment hostingEnvironment) : ITaskService
+	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment) : ITaskService
 	{
-		private readonly IMapper _mapper = mapper;
 		private readonly TaskContext _taskContext = taskContext;
 		private readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
 
-		ToDo? GetTaskById(Guid id)
+		public IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds)
 		{
-			try
-			{
-				return _taskContext.Tasks.First(task => task.ToDoId == id);
-			}
-			catch (Exception)
-			{
-				return null;
-			}
+			var subtasks = _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId)).ToList();
+			return subtasks;
 		}
 
-		SubTask? GetSubTaskById(Guid subTaskId)
+		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			try
-			{
-				return _taskContext.SubTasks.First(subTask => subTask.SubTaskId == subTaskId);
-				//return _taskContext.Tasks.Where(task => task.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).SelectMany(task => task.SubTasks).First(subTask => subTask.SubTaskId == subTaskId);
-			}
-			catch (Exception)
-			{
-				return null;
-			}
+			var toDos = _taskContext.Tasks.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId));
+			var taskIds = toDos.Select(t => t.ToDoId).ToList();
+			var subtasks = GetAllSubTaskByTasksIds(taskIds);
+
+			IList<GetAllTaskByEmployeeIdDto> toDoDto = toDos.Select(t => new GetAllTaskByEmployeeIdDto(t)).ToList();
+
+			return toDoDto;
 		}
 
-		public async Task<ToDo> AddTask(CreateToDoDto task)
+
+		public async Task<ToDoDto> AddTask(CreateToDoDto createToDoDto)
 		{
-			ToDo toDo = _mapper.Map<CreateToDoDto, ToDo>(task);
-			toDo.ToDoId = Guid.NewGuid();
+			ToDo toDo = new()
+			{
+				ToDoId = Guid.NewGuid(),
+				Title = createToDoDto.Title,
+				Description = createToDoDto.Description,
+				StartDate = createToDoDto.StartDate,
+				DueDate = createToDoDto.DueDate,
+			};
+			IList<Employee> employees = [.. _taskContext.Employees.Where(employee => createToDoDto.EmployeeIds.Contains(employee.EmployeeId))];
+			toDo.Employees = employees;
+
 			_taskContext.Add(toDo);
 			await _taskContext.SaveChangesAsync();
-			return toDo;
+
+			ToDoDto toDoDto = new()
+			{
+				TodoId = toDo.ToDoId,
+				Title = toDo.Title,
+				Description = toDo.Description,
+				StartDate = toDo.StartDate,
+				DueDate = toDo.DueDate,
+				Status = Utilities.CalculateTaskStatus(toDo),
+				SubTasks = [.. toDo.SubTasks.Select(subTask => new SubTaskDto()
+				{
+					SubTaskId = subTask.SubTaskId,
+					Title = subTask.Title,
+					Description = subTask.Description,
+					IsComplete = Utilities.CalculateSubTaskStatus(subTask),
+				})]
+			};
+			return toDoDto;
 		}
-		//TODO
-		public async Task<ToDo?> EditTask(Guid taskId, CreateToDoDto dto)
+		
+		public async Task<ToDo?> EditTask(Guid taskId, CreateToDoDto createToDoDto)
 		{
-			ToDo? todo = GetTaskById(taskId);
+			ToDo? todo = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == taskId);
 			if (todo == null)
 			{
 				return null;
 			}
-			todo.Title = dto.Title;
-			todo.Description = dto.Description;
-			todo.StartDate = dto.StartDate;
-			todo.DueDate = dto.DueDate;
+			todo.Title = createToDoDto.Title;
+			todo.Description = createToDoDto.Description;
+			todo.StartDate = createToDoDto.StartDate;
+			todo.DueDate = createToDoDto.DueDate;
+
 			_taskContext.Update(todo);
 			await _taskContext.SaveChangesAsync();
 			return todo;
 		}
 
-		public async Task<SubTaskDto?> AddSubTask(Guid taskId, SubTaskDto subTaskDto)
+		public async Task<SubTaskDto?> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
 		{
-			if (subTaskDto.NotesRequired == 0) return null;
-			ToDo? customTask = GetTaskById(taskId);
-			if (customTask == null) return null;
-			if (!Utilities.IsTaskActive(customTask)) return null;
-
+			if (createSubTaskDto.NotesCountToBeCompleted == 0) return null;
+			ToDo? todo = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == taskId);
+			if (todo == null) return null;
+			if (!Utilities.IsTaskActive(todo)) return null;
+			Console.WriteLine(todo.SubTasks.Count);
 			SubTask newSubTask = new()
 			{
-				Title = subTaskDto.Title,
-				Description = subTaskDto.Description,
-				IsCompleted = false,
-				PicturesCountToBeCompleted = subTaskDto.PicsRequired,
-				NotesCountToBeCompleted = subTaskDto.NotesRequired,
+				Title = createSubTaskDto.Title,
+				Description = createSubTaskDto.Description,
+				PicturesCountToBeCompleted = createSubTaskDto.PicturesCountToBeCompleted,
+				NotesCountToBeCompleted = createSubTaskDto.NotesCountToBeCompleted,
 			};
-			customTask.SubTasks.Add(newSubTask);
+			todo.SubTasks.Add(newSubTask);
 			await _taskContext.SaveChangesAsync();
-			SubTaskDto subTaskDto1 = _mapper.Map<SubTask, SubTaskDto>(newSubTask);
+			SubTaskDto subTaskDto1 = new()
+			{
+				SubTaskId = newSubTask.SubTaskId,
+				Title = newSubTask.Title,
+				Description = newSubTask.Description,
+				IsComplete = Utilities.CalculateSubTaskStatus(newSubTask)
+
+			};
+
 			return subTaskDto1;
 		}
 
-		public async Task<SubTaskDto?> EditSubTask(Guid subTaskId, SubTaskDto subTask)
+		public async Task<SubTaskDto?> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTask? subTaskFound = GetSubTaskById(subTaskId);
-			if (subTaskFound == null)
+			SubTask? subTaskToEdit = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
+			if (subTaskToEdit == null)
 			{
 				return null;
 			}
-			subTask.IsCompleted = Utilities.CalculateSubTaskStatus(subTaskFound);
-			_taskContext.Entry(subTaskFound).CurrentValues.SetValues(subTask);
+			_taskContext.Entry(subTaskToEdit).CurrentValues.SetValues(createSubTaskDto);
 			await _taskContext.SaveChangesAsync();
-			SubTaskDto subTaskDto = _mapper.Map<SubTask, SubTaskDto>(subTaskFound);
+			SubTaskDto subTaskDto = new()
+			{
+				SubTaskId = subTaskToEdit.SubTaskId,
+				Title = createSubTaskDto.Title,
+				Description = createSubTaskDto.Description,
+				IsComplete = Utilities.CalculateSubTaskStatus(subTaskToEdit),
+			};
 			return subTaskDto;
 		}
 
@@ -110,7 +142,7 @@ namespace TasksAPI.Services
 		{
 			try
 			{
-				SubTask? subTask = GetSubTaskById(subTaskId);
+				SubTask? subTask = _taskContext.SubTasks.First(subTask => subTask.SubTaskId == subTaskId);
 				if (subTask == null) return false;
 				string directory = Path.Combine(_hostingEnvironment.ContentRootPath, "Images");
 
@@ -133,7 +165,7 @@ namespace TasksAPI.Services
 
 		public async Task<bool> DeleteTask(Guid id)
 		{
-			ToDo? taskFound = GetTaskById(id);
+			ToDo? taskFound = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == id);
 			if (taskFound == null)
 			{
 				return false;

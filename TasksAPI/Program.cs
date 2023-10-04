@@ -9,7 +9,7 @@ namespace TasksAPI
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
-
+			//Utilities.GenerateGuids(20);
 			// Add services to the container.
 
 			builder.Services.AddControllers();
@@ -22,13 +22,7 @@ namespace TasksAPI
 			string dbString = envIsDev ? "TaskDb-dev" : "TaskDb";
 			builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
 			builder.Services.AddScoped<ITaskService, TaskService>();
-			var mapperConfig = new MapperConfiguration(mc =>
-			{
-				mc.AddProfile(new AutoMapperProfile());
-			});
-			IMapper mapper = mapperConfig.CreateMapper();
-			builder.Services.AddSingleton(mapper);
-
+			
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.

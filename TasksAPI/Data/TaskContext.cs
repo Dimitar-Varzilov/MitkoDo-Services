@@ -8,9 +8,32 @@ namespace TasksAPI.Data
 		public DbSet<ToDo> Tasks { get; set; }
 		public DbSet<SubTask> SubTasks { get; set; }
 		public DbSet<Note> Notes { get; set; }
+		public DbSet<Picture> Pictures { get; set; }
+		public DbSet<Employee> Employees { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+
+			modelBuilder.Entity<ToDo>(builder =>
+			{
+				builder.HasKey(p => p.ToDoId);
+				builder.Property(p => p.Title).IsRequired();
+				builder.Property(p => p.Description).IsRequired();
+				builder.Property(p => p.StartDate).IsRequired();
+				builder.Property(p => p.DueDate).IsRequired();
+				builder.HasMany(p => p.SubTasks).WithOne(p => p.Todo).HasForeignKey(p => p.ToDoId);
+				builder.HasMany(p => p.Employees).WithMany(p => p.Tasks);
+			});
+
+			modelBuilder.Entity<SubTask>(builder =>
+			{
+				builder.HasKey(p => p.SubTaskId);
+				builder.Property(p => p.Title).IsRequired();
+				builder.Property(p => p.Description).IsRequired();
+				builder.Property(p => p.NotesCountToBeCompleted).IsRequired().HasDefaultValue(1);
+				builder.Property(p => p.PicturesCountToBeCompleted).IsRequired().HasDefaultValue(0);
+				builder.HasOne(p => p.Todo).WithMany(p => p.SubTasks).HasForeignKey(p => p.ToDoId);
+			});
 
 			modelBuilder.Entity<Employee>(builder =>
 			{
@@ -29,24 +52,6 @@ namespace TasksAPI.Data
 				builder.HasKey(p => p.PictureId);
 				builder.Property(p => p.Path).IsRequired();
 			});
-
-			modelBuilder.Entity<SubTask>(builder =>
-			{
-				builder.HasKey(p => p.SubTaskId);
-				builder.Property(p => p.Title).IsRequired();
-				builder.Property(p => p.Description).IsRequired();
-				builder.Property(p => p.NotesCountToBeCompleted).IsRequired().HasDefaultValue(1);
-			});
-
-			modelBuilder.Entity<ToDo>(builder =>
-			{
-				builder.HasKey(p => p.ToDoId);
-				builder.Property(p => p.Title).IsRequired();
-				builder.Property(p => p.Description).IsRequired();
-				builder.Property(p => p.StartDate).IsRequired();
-				builder.Property(p => p.DueDate).IsRequired();
-			});
-
 		}
 	}
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TasksAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,19 +27,18 @@ namespace TasksAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Employee",
+                name: "Employees",
                 columns: table => new
                 {
-                    EmployeeId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Employee", x => x.EmployeeId);
+                    table.PrimaryKey("PK_Employees", x => x.EmployeeId);
                     table.ForeignKey(
-                        name: "FK_Employee_Tasks_ToDoId",
+                        name: "FK_Employees_Tasks_ToDoId",
                         column: x => x.ToDoId,
                         principalTable: "Tasks",
                         principalColumn: "ToDoId");
@@ -52,18 +51,16 @@ namespace TasksAPI.Migrations
                     SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PicturesCountToBeCompleted = table.Column<int>(type: "int", nullable: false),
+                    PicturesCountToBeCompleted = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     NotesCountToBeCompleted = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    TaskId = table.Column<int>(type: "int", nullable: false),
-                    TaskToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SubTasks", x => x.SubTaskId);
                     table.ForeignKey(
-                        name: "FK_SubTasks_Tasks_TaskToDoId",
-                        column: x => x.TaskToDoId,
+                        name: "FK_SubTasks_Tasks_ToDoId",
+                        column: x => x.ToDoId,
                         principalTable: "Tasks",
                         principalColumn: "ToDoId",
                         onDelete: ReferentialAction.Cascade);
@@ -73,8 +70,7 @@ namespace TasksAPI.Migrations
                 name: "Notes",
                 columns: table => new
                 {
-                    NoteId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NoteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
@@ -89,27 +85,26 @@ namespace TasksAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Picture",
+                name: "Pictures",
                 columns: table => new
                 {
-                    PictureId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PictureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Path = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Picture", x => x.PictureId);
+                    table.PrimaryKey("PK_Pictures", x => x.PictureId);
                     table.ForeignKey(
-                        name: "FK_Picture_SubTasks_SubTaskId",
+                        name: "FK_Pictures_SubTasks_SubTaskId",
                         column: x => x.SubTaskId,
                         principalTable: "SubTasks",
                         principalColumn: "SubTaskId");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Employee_ToDoId",
-                table: "Employee",
+                name: "IX_Employees_ToDoId",
+                table: "Employees",
                 column: "ToDoId");
 
             migrationBuilder.CreateIndex(
@@ -118,27 +113,27 @@ namespace TasksAPI.Migrations
                 column: "SubTaskId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Picture_SubTaskId",
-                table: "Picture",
+                name: "IX_Pictures_SubTaskId",
+                table: "Pictures",
                 column: "SubTaskId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SubTasks_TaskToDoId",
+                name: "IX_SubTasks_ToDoId",
                 table: "SubTasks",
-                column: "TaskToDoId");
+                column: "ToDoId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Employee");
+                name: "Employees");
 
             migrationBuilder.DropTable(
                 name: "Notes");
 
             migrationBuilder.DropTable(
-                name: "Picture");
+                name: "Pictures");
 
             migrationBuilder.DropTable(
                 name: "SubTasks");
