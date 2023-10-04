@@ -34,24 +34,32 @@ namespace AuthenticationAPI.Controllers
 		[HttpPost("login")]
 		public IActionResult Login(LoginDto request)
 		{
-			string token = _authService.LoginUser(request);
-			if (token == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
-			if (token == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
-			return Ok(token);
+			string responseToken = _authService.LoginUser(request);
+			if (responseToken == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
+			if (responseToken == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
+			Response.Cookies.Append("token", responseToken, new CookieOptions
+			{
+				HttpOnly = true,
+				//SameSite = SameSiteMode.Strict,
+				//Secure = true,
+				Expires = _authService.GetTokenExpirationDate()
+			});
+			return Ok(responseToken);
 		}
 
 		[HttpPost("verifyToken")]
-		public IActionResult ValidateToken([FromBody] ValidateTokenDto prop)
+		public IActionResult ValidateToken()
 		{
-			string token = prop.Token;
+			bool tryGetValue = Request.Cookies.TryGetValue("token", out string? token);
+			if (!tryGetValue || token == null) return BadRequest("Invalid token or error getting token");
 			return _authService.ValidateToken(token) ? Ok() : BadRequest();
 		}
 
 		[HttpPost("logout")]
-		public IActionResult Logout(ValidateTokenDto prop)
+		public IActionResult Logout()
 		{
-			string token = prop.Token;
-			return Ok(_authService.InvalidateToken(token));
+			Response.Cookies.Delete("token");
+			return Ok("You have been logged out");
 		}
 	}
 }

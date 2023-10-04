@@ -23,6 +23,12 @@ namespace TasksAPI
 			return ToDoStatusEnum.Running;
 		}
 
+		public static bool IsTaskCompleted(ToDo toDo)
+		{
+			DateTime now = DateTime.Now;
+			return toDo.SubTasks.All(subTask => CalculateSubTaskStatus(subTask) == true) && toDo.DueDate > now;
+		}
+
 		public static bool CalculateSubTaskStatus(SubTask SubTask)
 		{
 			bool result = SubTask.Notes.Count >= SubTask.NotesCountToBeCompleted && SubTask.Pictures.Count >= SubTask.PicturesCountToBeCompleted;

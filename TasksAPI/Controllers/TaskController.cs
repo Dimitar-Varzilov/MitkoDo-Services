@@ -56,9 +56,10 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpPost("subtask/addImage/{subTaskId}")]
-		public async Task<ActionResult<string>> AddImage(Guid subTaskId, List<IFormFile> images)
+		public async Task<ActionResult<string>> AddImage(Guid subTaskId, List<IFormFile> images, string note)
 		{
-			if (images.Count == 0) return BadRequest("No Image Found");
+            await Console.Out.WriteLineAsync(note);
+            if (images.Count == 0) return BadRequest("No Image Found");
 			await _taskService.AddSubTaskImage(subTaskId, images);
 			return Ok($"Image{(images.Count > 1 ? "s" : "")} successfully uploaded");
 		}

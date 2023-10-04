@@ -10,6 +10,7 @@ namespace TasksAPI.Dto
 		public string Description { get; set; } = "";
 		public DateTime StartDate { get; set; }
 		public DateTime DueDate { get; set; }
+		public bool IsComplete { get; set; }
 		public ToDoStatusEnum Status { get; set; } = ToDoStatusEnum.Upcoming;
 		public ICollection<SubTaskDto> SubTasks { get; set; } = [];
 
@@ -22,6 +23,7 @@ namespace TasksAPI.Dto
 			StartDate = t.StartDate;
 			DueDate = t.DueDate;
 			Status = Utilities.CalculateTaskStatus(t);
+			IsComplete = Utilities.IsTaskCompleted(t);
 			SubTasks = t.SubTasks.Select(s => new SubTaskDto()
 			{
 				SubTaskId = s.SubTaskId,

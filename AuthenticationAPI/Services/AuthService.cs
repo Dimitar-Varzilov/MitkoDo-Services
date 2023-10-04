@@ -5,7 +5,6 @@ using AuthenticationAPI.Models;
 using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -17,7 +16,7 @@ namespace AuthenticationAPI.Services
 		Task<UserDto?> RegisterUser(RegisterDto user, UserRole userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
 		bool ValidateToken(string token);
-		string InvalidateToken(string token);
+		DateTime GetTokenExpirationDate();
 	}
 	public class AuthService(IMapper mapper, AuthContext authContext, IConfiguration configuration) : IAuthService
 	{
@@ -26,6 +25,7 @@ namespace AuthenticationAPI.Services
 		private readonly string issuer = $"http://localhost:7145";
 		private readonly string audience = "http://localhost:5000";
 		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 16))))];
+		private readonly DateTime tokenExpirationDate = DateTime.Now.AddDays(30);
 
 		private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
 		{
@@ -53,35 +53,6 @@ namespace AuthenticationAPI.Services
 			var token = new JwtSecurityToken(claims: claims, expires: expires, signingCredentials: cred, issuer: issuer, audience: audience);
 			var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 			return jwt;
-		}
-
-		private bool ValidateToken(string token, string issuer, string audience, out JwtSecurityToken jwt)
-		{
-			var validationParameters = new TokenValidationParameters
-			{
-				ValidateIssuer = true,
-				ValidIssuer = issuer,
-				ValidateAudience = true,
-				ValidAudience = audience,
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKeys = securityKeys,
-				ValidateLifetime = true,
-			};
-
-			try
-			{
-				var tokenHandler = new JwtSecurityTokenHandler();
-				var isValid = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken) ?? throw new SecurityTokenValidationException("Token is not valid");
-				jwt = (JwtSecurityToken)validatedToken;
-
-				return true;
-			}
-			catch (SecurityTokenValidationException ex)
-			{
-				jwt = new JwtSecurityToken();
-				Console.WriteLine(ex.Message);
-				return false;
-			}
 		}
 
 		public async Task<UserDto?> RegisterUser(RegisterDto dto, UserRole userRole = UserRole.MEMBER)
@@ -116,19 +87,43 @@ namespace AuthenticationAPI.Services
 			if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
-			string token = CreateToken(user, DateTime.Now.AddDays(30));
+			string token = CreateToken(user, tokenExpirationDate);
 
 			return token;
 		}
 
 		public bool ValidateToken(string token)
 		{
-			return ValidateToken(token, issuer, audience, out _);
+			try
+			{
+				var tokenHandler = new JwtSecurityTokenHandler();
+				bool canRead = tokenHandler.CanReadToken(token);
+				if (!canRead)
+					return false;
+				var validationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidIssuer = issuer,
+					ValidateAudience = true,
+					ValidAudience = audience,
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKeys = securityKeys,
+					ValidateLifetime = true,
+				};
+				var isValid = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken) ?? throw new SecurityTokenValidationException("Token is not valid");
+
+				return true;
+			}
+			catch (SecurityTokenValidationException ex)
+			{
+				Console.WriteLine(ex.Message);
+				return false;
+			}
 		}
 
-		public string InvalidateToken(string token)
+		public DateTime GetTokenExpirationDate()
 		{
-			return CreateToken(new User(), DateTime.UtcNow.AddDays(-1));
+			return tokenExpirationDate;
 		}
 	}
 }

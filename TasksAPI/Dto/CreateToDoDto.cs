@@ -2,7 +2,6 @@
 
 namespace TasksAPI.Dto
 {
-
 	public class CreateToDoDto
 	{
 		public string Title { get; set; } = string.Empty;

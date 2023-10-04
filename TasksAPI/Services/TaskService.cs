@@ -4,7 +4,6 @@ using TasksAPI.Models;
 
 namespace TasksAPI.Services
 {
-
 	public interface ITaskService
 	{
 		IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds);
@@ -23,14 +22,14 @@ namespace TasksAPI.Services
 
 		public IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds)
 		{
-			var subtasks = _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId)).ToList();
+			IList<SubTask> subtasks =[.. _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId))];
 			return subtasks;
 		}
 
 		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			var toDos = _taskContext.Tasks.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId));
-			var taskIds = toDos.Select(t => t.ToDoId).ToList();
+			List<ToDo> toDos = [.. _taskContext.Tasks.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId))];
+			List<Guid> taskIds = [.. toDos.Select(t => t.ToDoId)];
 			var subtasks = GetAllSubTaskByTasksIds(taskIds);
 
 			IList<GetAllTaskByEmployeeIdDto> toDoDto = toDos.Select(t => new GetAllTaskByEmployeeIdDto(t)).ToList();
@@ -73,7 +72,7 @@ namespace TasksAPI.Services
 			};
 			return toDoDto;
 		}
-		
+
 		public async Task<ToDo?> EditTask(Guid taskId, CreateToDoDto createToDoDto)
 		{
 			ToDo? todo = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == taskId);
