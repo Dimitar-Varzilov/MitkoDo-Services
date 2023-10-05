@@ -11,56 +11,62 @@ namespace TasksAPI.Controllers
 	{
 		private readonly ITaskService _taskService = taskService;
 
+		[HttpGet]
+		public ActionResult<IList<ToDoDto>> GetAllToDos()
+		{
+			IList<ToDoDto> toDos = _taskService.GetAllToDos();
+			return Ok(toDos);
+		}
+
 		[HttpGet("byEmployeeId/{employeeId:guid}")]
 		public ActionResult<IList<GetAllTaskByEmployeeIdDto>> GetTasksByEmployeeId(Guid employeeId)
 		{
-			IList<GetAllTaskByEmployeeIdDto> tasks = _taskService.GetAllTasksAndSubTasksByEmployeeId(employeeId);
-			return Ok(tasks);
+			IList<GetAllTaskByEmployeeIdDto> toDos = _taskService.GetAllTasksAndSubTasksByEmployeeId(employeeId);
+			return Ok(toDos);
 		}
 
 		[HttpPost]
-		public async Task<ActionResult<ToDoDto>> AddTask(CreateToDoDto task)
+		public async Task<ActionResult<ToDoDto>> AddToDo(CreateToDoDto dto)
 		{
-			ToDoDto newTask = await _taskService.AddTask(task);
-			return Ok(newTask);
+			ToDoDto newTodo = await _taskService.AddTask(dto);
+			return Ok(newTodo);
 		}
 
 
-		[HttpPut("{id}")]
-		public async Task<ActionResult<ToDo?>> EditTask(Guid id, CreateToDoDto task)
+		[HttpPut("{toDoId:guid}")]
+		public async Task<ActionResult<ToDo?>> EditToDo(Guid toDoId, CreateToDoDto createSubTaskDto)
 		{
-			ToDo? customTask = await _taskService.EditTask(id, task);
-			return customTask == null ? NotFound("Task Not Found") : Ok(customTask);
+			ToDo? editedTodo = await _taskService.EditTask(toDoId, createSubTaskDto);
+			return editedTodo == null ? NotFound("Task Not Found") : Ok(editedTodo);
 		}
 
-		[HttpPost("subtask/add/{taskId}")]
-		public async Task<ActionResult<CreateSubTaskDto?>> AddSubTask(Guid taskId, CreateSubTaskDto subTask)
+		[HttpPost("subtask/add/{taskId:guid}")]
+		public async Task<ActionResult<CreateSubTaskDto?>> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTaskDto? newSubTask = await _taskService.AddSubTask(taskId, subTask);
+			SubTaskDto? newSubTask = await _taskService.AddSubTask(taskId, createSubTaskDto);
 			return newSubTask == null ? NotFound("Task Not Found") : Ok(newSubTask);
 		}
 
 
-		[HttpPut("subtask/edit/{subTaskId}")]
-		public async Task<ActionResult<SubTaskDto?>> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask)
+		[HttpPut("subtask/edit/{subTaskId:guid}")]
+		public async Task<ActionResult<SubTaskDto?>> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTaskDto? editedSubTask = await _taskService.EditSubTask(subTaskId, subTask);
+			SubTaskDto? editedSubTask = await _taskService.EditSubTask(subTaskId, createSubTaskDto);
 			return editedSubTask == null ? NotFound("SubTask Not Found") : Ok(editedSubTask);
 		}
 
-		[HttpDelete("{id}")]
-		public async Task<ActionResult<bool>> DeleteTask(Guid id)
+		[HttpDelete("{toDoId:guid}")]
+		public async Task<ActionResult<bool>> DeleteTask(Guid toDoId)
 		{
-			bool taskDeleted = await _taskService.DeleteTask(id);
+			bool taskDeleted = await _taskService.DeleteTask(toDoId);
 			return !taskDeleted ? NotFound() : Ok();
 		}
 
-		[HttpPost("subtask/addImage/{subTaskId}")]
-		public async Task<ActionResult<string>> AddImageAndNote(Guid subTaskId,AddImageAndNotesDto addImageAndNotesDto)
+		[HttpPost("subtask/addImage/{subTaskId:guid}")]
+		public async Task<ActionResult<string>> AddImageAndNote(Guid subTaskId, AddImagesAndNoteDto addImagesAndNoteDto)
 		{
-            await Console.Out.WriteLineAsync(addImageAndNotesDto.Note);
-			bool success =	await _taskService.AddSubTaskImage(subTaskId, addImageAndNotesDto.Images);
-			return success ? Ok($"Image{(addImageAndNotesDto.Images.Count > 1 ? "s" : "")} and/or notes successfully uploaded") : BadRequest("Something went wrong");
+			bool success = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto);
+			return !success ? BadRequest("Something went wrong") : Ok($"Image{(addImagesAndNoteDto.Images.Count > 1 ? "s" : "")} and/or notes successfully uploaded");
 		}
 	}
 }

@@ -6,33 +6,96 @@ namespace TasksAPI.Services
 {
 	public interface ITaskService
 	{
-		IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds);
+		IList<ToDoDto> GetAllToDos();
 		IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId);
 		Task<ToDoDto> AddTask(CreateToDoDto task);
 		Task<ToDo?> EditTask(Guid taskId, CreateToDoDto task);
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<SubTaskDto?> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<bool> DeleteTask(Guid taskId);
-		Task<bool> AddSubTaskImage(Guid subTaskId, List<IFormFile> images);
+		Task<bool> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
 	}
 	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment) : ITaskService
 	{
 		private readonly TaskContext _taskContext = taskContext;
 		private readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
 
-		public IList<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds)
+		List<Picture> GetAllPicturesBySubTasksIds(IList<Guid> subTaskIds)
 		{
-			IList<SubTask> subtasks =[.. _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId))];
-			return subtasks;
+			var pictures = _taskContext.Pictures.Where(p => subTaskIds.Any(s => s == p.SubTaskId));
+			return [.. pictures];
+		}
+
+		List<Note> GetAllNotesBySubTasksIds(IList<Guid> subTaskIds)
+		{
+			var notes = _taskContext.Notes.Where(n => subTaskIds.Any(s => s == n.SubTaskId));
+			return [.. notes];
+		}
+
+		List<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds)
+		{
+			var subtasks = _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId));
+			List<Guid> subTaskIds = [.. subtasks.Select(s => s.SubTaskId)];
+			GetAllPicturesBySubTasksIds(subTaskIds);
+			GetAllNotesBySubTasksIds(subTaskIds);
+			return [.. subtasks];
+		}
+
+		List<SubTask> GetSubTaskByToDoId(Guid toDoId)
+		{
+			return [.. _taskContext.SubTasks.Where(s => s.ToDoId == toDoId)];
+		}
+
+		List<SubTask> GetAllSubtasks()
+		{
+			return [.. _taskContext.SubTasks];
+		}
+
+		List<Employee> GetAllEmployees()
+		{
+			return [.. _taskContext.Employees];
+		}
+
+		List<Employee> GetEmployeesByTaskId(Guid toDoId)
+		{
+			return [.. _taskContext.Employees.Where(e => e.ToDoId == toDoId)];
+		}
+
+		List<Employee> GetEmployeesByTasksIds(IList<Guid> toDoIds)
+		{
+			var search = _taskContext.Employees.Where(e => toDoIds.Any(todoId => todoId == e.ToDoId));
+			return [.. search];
+		}
+
+		List<Picture> GetAllPictures()
+		{
+			return [.. _taskContext.Pictures];
+		}
+
+		List<Note> GetAllNotes()
+		{
+			return [.. _taskContext.Notes];
+		}
+
+		public IList<ToDoDto> GetAllToDos()
+		{
+			List<ToDo> toDos = [.. _taskContext.ToDos];
+			IList<Guid> toDoIds = [.. toDos.Select(t => t.ToDoId)];
+			GetAllSubTaskByTasksIds(toDoIds);
+			GetEmployeesByTasksIds(toDoIds);
+
+			IList<ToDoDto> toDoDto = [.. toDos.Select(t => new ToDoDto(t))];
+
+			return toDoDto;
 		}
 
 		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			List<ToDo> toDos = [.. _taskContext.Tasks.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId))];
+			List<ToDo> toDos = [.. _taskContext.ToDos.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId))];
 			List<Guid> taskIds = [.. toDos.Select(t => t.ToDoId)];
-			var subtasks = GetAllSubTaskByTasksIds(taskIds);
+			GetAllSubTaskByTasksIds(taskIds);
 
-			IList<GetAllTaskByEmployeeIdDto> toDoDto = toDos.Select(t => new GetAllTaskByEmployeeIdDto(t)).ToList();
+			IList<GetAllTaskByEmployeeIdDto> toDoDto = [.. toDos.Select(t => new GetAllTaskByEmployeeIdDto(t))];
 
 			return toDoDto;
 		}
@@ -40,7 +103,7 @@ namespace TasksAPI.Services
 
 		public async Task<ToDoDto> AddTask(CreateToDoDto createToDoDto)
 		{
-			ToDo toDo = new()
+			ToDo newToDo = new()
 			{
 				ToDoId = Guid.NewGuid(),
 				Title = createToDoDto.Title,
@@ -49,33 +112,18 @@ namespace TasksAPI.Services
 				DueDate = createToDoDto.DueDate,
 			};
 			IList<Employee> employees = [.. _taskContext.Employees.Where(employee => createToDoDto.EmployeeIds.Contains(employee.EmployeeId))];
-			toDo.Employees = employees;
+			newToDo.Employees = employees;
 
-			_taskContext.Add(toDo);
+			_taskContext.Add(newToDo);
 			await _taskContext.SaveChangesAsync();
 
-			ToDoDto toDoDto = new()
-			{
-				TodoId = toDo.ToDoId,
-				Title = toDo.Title,
-				Description = toDo.Description,
-				StartDate = toDo.StartDate,
-				DueDate = toDo.DueDate,
-				Status = Utilities.CalculateTaskStatus(toDo),
-				SubTasks = [.. toDo.SubTasks.Select(subTask => new SubTaskDto()
-				{
-					SubTaskId = subTask.SubTaskId,
-					Title = subTask.Title,
-					Description = subTask.Description,
-					IsComplete = Utilities.CalculateSubTaskStatus(subTask),
-				})]
-			};
+			ToDoDto toDoDto = new(newToDo);
 			return toDoDto;
 		}
 
 		public async Task<ToDo?> EditTask(Guid taskId, CreateToDoDto createToDoDto)
 		{
-			ToDo? todo = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == taskId);
+			ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
 			if (todo == null)
 			{
 				return null;
@@ -93,7 +141,7 @@ namespace TasksAPI.Services
 		public async Task<SubTaskDto?> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
 		{
 			if (createSubTaskDto.NotesCountToBeCompleted == 0) return null;
-			ToDo? todo = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == taskId);
+			ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
 			if (todo == null) return null;
 			if (!Utilities.IsTaskActive(todo)) return null;
 			Console.WriteLine(todo.SubTasks.Count);
@@ -137,21 +185,26 @@ namespace TasksAPI.Services
 			return subTaskDto;
 		}
 
-		public async Task<bool> AddSubTaskImage(Guid subTaskId, List<IFormFile> images)
+		public async Task<bool> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto)
 		{
 			try
 			{
-				SubTask? subTask = _taskContext.SubTasks.First(subTask => subTask.SubTaskId == subTaskId);
+				SubTask? subTask = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
 				if (subTask == null) return false;
-				string directory = Path.Combine(_hostingEnvironment.ContentRootPath, "Images");
 
-				foreach (var image in images)
+				if (dto.Images.Count > 0)
 				{
-					string filePath = Path.Combine(directory, image.FileName);
-					FileStream fileStream = new(filePath, FileMode.Create);
-					await image.CopyToAsync(fileStream);
-					subTask.Pictures.Add(new Picture() { Path = filePath });
+					string directory = Path.Combine(_hostingEnvironment.ContentRootPath, "Images");
+					foreach (var image in dto.Images)
+					{
+						string filePath = Path.Combine(directory, image.FileName);
+						FileStream fileStream = new(filePath, FileMode.Create);
+						await image.CopyToAsync(fileStream);
+						subTask.Pictures.Add(new Picture() { Path = filePath });
+					}
 				}
+
+				subTask.Notes.Add(new Note() { Title = dto.Note });
 				await _taskContext.SaveChangesAsync();
 				return true;
 			}
@@ -164,7 +217,7 @@ namespace TasksAPI.Services
 
 		public async Task<bool> DeleteTask(Guid id)
 		{
-			ToDo? taskFound = _taskContext.Tasks.FirstOrDefault(task => task.ToDoId == id);
+			ToDo? taskFound = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == id);
 			if (taskFound == null)
 			{
 				return false;

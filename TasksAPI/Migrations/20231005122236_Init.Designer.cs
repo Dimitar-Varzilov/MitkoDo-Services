@@ -12,7 +12,7 @@ using TasksAPI.Data;
 namespace TasksAPI.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20231003230815_Init")]
+    [Migration("20231005122236_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -35,7 +35,7 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ToDoId")
+                    b.Property<Guid>("ToDoId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("EmployeeId");
@@ -51,7 +51,7 @@ namespace TasksAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("SubTaskId")
+                    b.Property<Guid>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
@@ -75,7 +75,7 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("SubTaskId")
+                    b.Property<Guid>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PictureId");
@@ -141,28 +141,40 @@ namespace TasksAPI.Migrations
 
                     b.HasKey("ToDoId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("ToDos");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
-                    b.HasOne("TasksAPI.Models.ToDo", null)
+                    b.HasOne("TasksAPI.Models.ToDo", "ToDo")
                         .WithMany("Employees")
-                        .HasForeignKey("ToDoId");
+                        .HasForeignKey("ToDoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ToDo");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Note", b =>
                 {
-                    b.HasOne("TasksAPI.Models.SubTask", null)
+                    b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Notes")
-                        .HasForeignKey("SubTaskId");
+                        .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubTask");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Picture", b =>
                 {
-                    b.HasOne("TasksAPI.Models.SubTask", null)
+                    b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Pictures")
-                        .HasForeignKey("SubTaskId");
+                        .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubTask");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.SubTask", b =>

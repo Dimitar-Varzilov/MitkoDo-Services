@@ -12,7 +12,7 @@ namespace TasksAPI.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Tasks",
+                name: "ToDos",
                 columns: table => new
                 {
                     ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -23,7 +23,7 @@ namespace TasksAPI.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tasks", x => x.ToDoId);
+                    table.PrimaryKey("PK_ToDos", x => x.ToDoId);
                 });
 
             migrationBuilder.CreateTable(
@@ -32,16 +32,17 @@ namespace TasksAPI.Migrations
                 {
                     EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Employees", x => x.EmployeeId);
                     table.ForeignKey(
-                        name: "FK_Employees_Tasks_ToDoId",
+                        name: "FK_Employees_ToDos_ToDoId",
                         column: x => x.ToDoId,
-                        principalTable: "Tasks",
-                        principalColumn: "ToDoId");
+                        principalTable: "ToDos",
+                        principalColumn: "ToDoId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -59,9 +60,9 @@ namespace TasksAPI.Migrations
                 {
                     table.PrimaryKey("PK_SubTasks", x => x.SubTaskId);
                     table.ForeignKey(
-                        name: "FK_SubTasks_Tasks_ToDoId",
+                        name: "FK_SubTasks_ToDos_ToDoId",
                         column: x => x.ToDoId,
-                        principalTable: "Tasks",
+                        principalTable: "ToDos",
                         principalColumn: "ToDoId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -72,7 +73,7 @@ namespace TasksAPI.Migrations
                 {
                     NoteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -81,7 +82,8 @@ namespace TasksAPI.Migrations
                         name: "FK_Notes_SubTasks_SubTaskId",
                         column: x => x.SubTaskId,
                         principalTable: "SubTasks",
-                        principalColumn: "SubTaskId");
+                        principalColumn: "SubTaskId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,7 +92,7 @@ namespace TasksAPI.Migrations
                 {
                     PictureId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Path = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    SubTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -99,7 +101,8 @@ namespace TasksAPI.Migrations
                         name: "FK_Pictures_SubTasks_SubTaskId",
                         column: x => x.SubTaskId,
                         principalTable: "SubTasks",
-                        principalColumn: "SubTaskId");
+                        principalColumn: "SubTaskId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -139,7 +142,7 @@ namespace TasksAPI.Migrations
                 name: "SubTasks");
 
             migrationBuilder.DropTable(
-                name: "Tasks");
+                name: "ToDos");
         }
     }
 }

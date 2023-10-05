@@ -22,21 +22,6 @@ namespace TasksAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EmployeeToDo", b =>
-                {
-                    b.Property<Guid>("EmployeesEmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("TasksToDoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("EmployeesEmployeeId", "TasksToDoId");
-
-                    b.HasIndex("TasksToDoId");
-
-                    b.ToTable("EmployeeToDo");
-                });
-
             modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
                     b.Property<Guid>("EmployeeId")
@@ -47,7 +32,12 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("ToDoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("EmployeeId");
+
+                    b.HasIndex("ToDoId");
 
                     b.ToTable("Employees");
                 });
@@ -58,7 +48,7 @@ namespace TasksAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("SubTaskId")
+                    b.Property<Guid>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
@@ -82,7 +72,7 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("SubTaskId")
+                    b.Property<Guid>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PictureId");
@@ -148,36 +138,40 @@ namespace TasksAPI.Migrations
 
                     b.HasKey("ToDoId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("ToDos");
                 });
 
-            modelBuilder.Entity("EmployeeToDo", b =>
+            modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
-                    b.HasOne("TasksAPI.Models.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeesEmployeeId")
+                    b.HasOne("TasksAPI.Models.ToDo", "ToDo")
+                        .WithMany("Employees")
+                        .HasForeignKey("ToDoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TasksAPI.Models.ToDo", null)
-                        .WithMany()
-                        .HasForeignKey("TasksToDoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ToDo");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Note", b =>
                 {
-                    b.HasOne("TasksAPI.Models.SubTask", null)
+                    b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Notes")
-                        .HasForeignKey("SubTaskId");
+                        .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubTask");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Picture", b =>
                 {
-                    b.HasOne("TasksAPI.Models.SubTask", null)
+                    b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Pictures")
-                        .HasForeignKey("SubTaskId");
+                        .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubTask");
                 });
 
             modelBuilder.Entity("TasksAPI.Models.SubTask", b =>
@@ -200,6 +194,8 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.ToDo", b =>
                 {
+                    b.Navigation("Employees");
+
                     b.Navigation("SubTasks");
                 });
 #pragma warning restore 612, 618
