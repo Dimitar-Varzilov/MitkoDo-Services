@@ -4,7 +4,6 @@
 	{
 		public Guid EmployeeId { get; set; }
 		public string Name { get; set; } = string.Empty;
-		public Guid ToDoId { get; set; }
-		public ToDo ToDo { get; set; } = new ToDo();
+		public IList<ToDo> ToDos { get; set; } = [];
 	}
 }

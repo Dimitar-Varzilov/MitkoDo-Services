@@ -1,4 +1,5 @@
-﻿using TasksAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TasksAPI.Data;
 using TasksAPI.Dto;
 using TasksAPI.Models;
 
@@ -9,95 +10,30 @@ namespace TasksAPI.Services
 		IList<ToDoDto> GetAllToDos();
 		IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId);
 		Task<ToDoDto> AddTask(CreateToDoDto task);
-		Task<ToDo?> EditTask(Guid taskId, CreateToDoDto task);
+		Task<int> EditTask(Guid taskId, CreateToDoDto task);
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
-		Task<SubTaskDto?> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
-		Task<bool> DeleteTask(Guid taskId);
-		Task<bool> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
+		Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
+		Task<int> RemoveEmployee(Guid toDoId, RemoveEmployeeDto employeeId);
+		Task<int> DeleteTask(Guid taskId);
+		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
 	}
 	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment) : ITaskService
 	{
 		private readonly TaskContext _taskContext = taskContext;
 		private readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
 
-		List<Picture> GetAllPicturesBySubTasksIds(IList<Guid> subTaskIds)
-		{
-			var pictures = _taskContext.Pictures.Where(p => subTaskIds.Any(s => s == p.SubTaskId));
-			return [.. pictures];
-		}
-
-		List<Note> GetAllNotesBySubTasksIds(IList<Guid> subTaskIds)
-		{
-			var notes = _taskContext.Notes.Where(n => subTaskIds.Any(s => s == n.SubTaskId));
-			return [.. notes];
-		}
-
-		List<SubTask> GetAllSubTaskByTasksIds(IList<Guid> taskIds)
-		{
-			var subtasks = _taskContext.SubTasks.Where(s => taskIds.Any(t => t == s.ToDoId));
-			List<Guid> subTaskIds = [.. subtasks.Select(s => s.SubTaskId)];
-			GetAllPicturesBySubTasksIds(subTaskIds);
-			GetAllNotesBySubTasksIds(subTaskIds);
-			return [.. subtasks];
-		}
-
-		List<SubTask> GetSubTaskByToDoId(Guid toDoId)
-		{
-			return [.. _taskContext.SubTasks.Where(s => s.ToDoId == toDoId)];
-		}
-
-		List<SubTask> GetAllSubtasks()
-		{
-			return [.. _taskContext.SubTasks];
-		}
-
-		List<Employee> GetAllEmployees()
-		{
-			return [.. _taskContext.Employees];
-		}
-
-		List<Employee> GetEmployeesByTaskId(Guid toDoId)
-		{
-			return [.. _taskContext.Employees.Where(e => e.ToDoId == toDoId)];
-		}
-
-		List<Employee> GetEmployeesByTasksIds(IList<Guid> toDoIds)
-		{
-			var search = _taskContext.Employees.Where(e => toDoIds.Any(todoId => todoId == e.ToDoId));
-			return [.. search];
-		}
-
-		List<Picture> GetAllPictures()
-		{
-			return [.. _taskContext.Pictures];
-		}
-
-		List<Note> GetAllNotes()
-		{
-			return [.. _taskContext.Notes];
-		}
-
 		public IList<ToDoDto> GetAllToDos()
 		{
-			List<ToDo> toDos = [.. _taskContext.ToDos];
-			IList<Guid> toDoIds = [.. toDos.Select(t => t.ToDoId)];
-			GetAllSubTaskByTasksIds(toDoIds);
-			GetEmployeesByTasksIds(toDoIds);
+			var toDos = _taskContext.ToDos.Include(t => t.Employees).Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes);
 
-			IList<ToDoDto> toDoDto = [.. toDos.Select(t => new ToDoDto(t))];
-
-			return toDoDto;
+			return [.. toDos.Select(t => new ToDoDto(t))];
 		}
 
 		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			List<ToDo> toDos = [.. _taskContext.ToDos.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId))];
-			List<Guid> taskIds = [.. toDos.Select(t => t.ToDoId)];
-			GetAllSubTaskByTasksIds(taskIds);
+			var toDos = _taskContext.ToDos.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId)).Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes);
 
-			IList<GetAllTaskByEmployeeIdDto> toDoDto = [.. toDos.Select(t => new GetAllTaskByEmployeeIdDto(t))];
-
-			return toDoDto;
+			return [.. toDos.Select(t => new GetAllTaskByEmployeeIdDto(t))];
 		}
 
 
@@ -121,21 +57,25 @@ namespace TasksAPI.Services
 			return toDoDto;
 		}
 
-		public async Task<ToDo?> EditTask(Guid taskId, CreateToDoDto createToDoDto)
+		public async Task<int> EditTask(Guid taskId, CreateToDoDto createToDoDto)
 		{
-			ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
-			if (todo == null)
+			try
 			{
-				return null;
-			}
-			todo.Title = createToDoDto.Title;
-			todo.Description = createToDoDto.Description;
-			todo.StartDate = createToDoDto.StartDate;
-			todo.DueDate = createToDoDto.DueDate;
+				ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
+				if (todo == null) return StatusCodes.Status404NotFound;
 
-			_taskContext.Update(todo);
-			await _taskContext.SaveChangesAsync();
-			return todo;
+				_taskContext.Entry(todo).CurrentValues.SetValues(createToDoDto);
+
+				_taskContext.Update(todo);
+				await _taskContext.SaveChangesAsync();
+				return StatusCodes.Status200OK;
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine(exception.Message);
+				return StatusCodes.Status500InternalServerError;
+			}
+
 		}
 
 		public async Task<SubTaskDto?> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
@@ -166,31 +106,33 @@ namespace TasksAPI.Services
 			return subTaskDto1;
 		}
 
-		public async Task<SubTaskDto?> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
+		public async Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTask? subTaskToEdit = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
-			if (subTaskToEdit == null)
+			try
 			{
-				return null;
+				var query = _taskContext.ToDos.Where(toDo => toDo.StartDate < DateTime.Now && toDo.DueDate > DateTime.Now && toDo.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).ToList();
+				if (query.Count == 0) return StatusCodes.Status400BadRequest;
+
+				SubTask subtaskToEdit = query.First().SubTasks.First();
+				_taskContext.Entry(subtaskToEdit).CurrentValues.SetValues(createSubTaskDto);
+				await _taskContext.SaveChangesAsync();
+
+				return StatusCodes.Status200OK;
 			}
-			_taskContext.Entry(subTaskToEdit).CurrentValues.SetValues(createSubTaskDto);
-			await _taskContext.SaveChangesAsync();
-			SubTaskDto subTaskDto = new()
+			catch (Exception e)
 			{
-				SubTaskId = subTaskToEdit.SubTaskId,
-				Title = createSubTaskDto.Title,
-				Description = createSubTaskDto.Description,
-				IsComplete = Utilities.CalculateSubTaskStatus(subTaskToEdit),
-			};
-			return subTaskDto;
+				Console.WriteLine(e.Message);
+				return StatusCodes.Status500InternalServerError;
+			}
+
 		}
 
-		public async Task<bool> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto)
+		public async Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto)
 		{
 			try
 			{
 				SubTask? subTask = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
-				if (subTask == null) return false;
+				if (subTask == null) return StatusCodes.Status400BadRequest;
 
 				if (dto.Images.Count > 0)
 				{
@@ -206,25 +148,53 @@ namespace TasksAPI.Services
 
 				subTask.Notes.Add(new Note() { Title = dto.Note });
 				await _taskContext.SaveChangesAsync();
-				return true;
+				return StatusCodes.Status201Created;
 			}
-			catch (Exception)
+			catch (Exception exception)
 			{
-				return false;
+				Console.WriteLine(exception.Message);
+				return StatusCodes.Status500InternalServerError;
 			}
 
 		}
 
-		public async Task<bool> DeleteTask(Guid id)
+		public async Task<int> RemoveEmployee(Guid toDoId, RemoveEmployeeDto dto)
 		{
-			ToDo? taskFound = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == id);
-			if (taskFound == null)
+			try
 			{
-				return false;
+				var toDos = _taskContext.ToDos.Where(task => task.ToDoId == toDoId).Include(todo => todo.Employees.Where(employee => employee.EmployeeId == dto.EmployeeId)).ToList();
+				if (toDos == null) return StatusCodes.Status400BadRequest;
+
+				ToDo toDo = toDos.First();
+				if (toDo.Employees.Count == 0) return StatusCodes.Status404NotFound;
+				toDo.Employees.Remove(toDo.Employees.First());
+				await _taskContext.SaveChangesAsync();
+				return StatusCodes.Status200OK;
 			}
-			_taskContext.Remove(taskFound);
-			await _taskContext.SaveChangesAsync();
-			return true;
+			catch (Exception exception)
+			{
+				Console.WriteLine(exception.Message);
+				return StatusCodes.Status500InternalServerError;
+			}
+		}
+
+		public async Task<int> DeleteTask(Guid id)
+		{
+			try
+			{
+				ToDo? taskFound = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == id);
+				if (taskFound == null) return StatusCodes.Status404NotFound;
+
+				_taskContext.Remove(taskFound);
+				await _taskContext.SaveChangesAsync();
+				return StatusCodes.Status200OK;
+
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine(exception.Message);
+				return StatusCodes.Status500InternalServerError;
+			}
 		}
 	}
 }

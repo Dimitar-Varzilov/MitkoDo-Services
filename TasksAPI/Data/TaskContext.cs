@@ -22,7 +22,9 @@ namespace TasksAPI.Data
 				builder.Property(p => p.StartDate).IsRequired();
 				builder.Property(p => p.DueDate).IsRequired();
 				builder.HasMany(p => p.SubTasks).WithOne(p => p.Todo).HasForeignKey(p => p.ToDoId);
-				builder.HasMany(p => p.Employees).WithOne(p => p.ToDo).HasForeignKey(p => p.ToDoId);
+				builder.Navigation(p => p.SubTasks).AutoInclude();
+				builder.HasMany(p => p.Employees).WithMany(p => p.ToDos);
+				builder.Navigation(p => p.Employees).AutoInclude();
 			});
 
 			modelBuilder.Entity<SubTask>(builder =>
@@ -33,13 +35,14 @@ namespace TasksAPI.Data
 				builder.Property(p => p.NotesCountToBeCompleted).IsRequired().HasDefaultValue(1);
 				builder.Property(p => p.PicturesCountToBeCompleted).IsRequired().HasDefaultValue(0);
 				builder.HasOne(p => p.Todo).WithMany(p => p.SubTasks).HasForeignKey(p => p.ToDoId).IsRequired();
+				builder.Navigation(p => p.Pictures).AutoInclude();
+				builder.Navigation(p => p.Notes).AutoInclude();
 			});
 
 			modelBuilder.Entity<Employee>(builder =>
 			{
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
-				builder.HasOne(p => p.ToDo).WithMany(p => p.Employees).HasForeignKey(p => p.ToDoId);
 			});
 
 			modelBuilder.Entity<Note>(builder =>

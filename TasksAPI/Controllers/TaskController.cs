@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using TasksAPI.Dto;
-using TasksAPI.Models;
 using TasksAPI.Services;
 
 namespace TasksAPI.Controllers
@@ -34,10 +33,10 @@ namespace TasksAPI.Controllers
 
 
 		[HttpPut("{toDoId:guid}")]
-		public async Task<ActionResult<ToDo?>> EditToDo(Guid toDoId, CreateToDoDto createSubTaskDto)
+		public async Task<ActionResult<int>> EditToDo(Guid toDoId, CreateToDoDto createSubTaskDto)
 		{
-			ToDo? editedTodo = await _taskService.EditTask(toDoId, createSubTaskDto);
-			return editedTodo == null ? NotFound("Task Not Found") : Ok(editedTodo);
+			int response = await _taskService.EditTask(toDoId, createSubTaskDto);
+			return StatusCode(response);
 		}
 
 		[HttpPost("subtask/add/{taskId:guid}")]
@@ -49,24 +48,31 @@ namespace TasksAPI.Controllers
 
 
 		[HttpPut("subtask/edit/{subTaskId:guid}")]
-		public async Task<ActionResult<SubTaskDto?>> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
+		public async Task<ActionResult<int>> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTaskDto? editedSubTask = await _taskService.EditSubTask(subTaskId, createSubTaskDto);
-			return editedSubTask == null ? NotFound("SubTask Not Found") : Ok(editedSubTask);
+			int response = await _taskService.EditSubTask(subTaskId, createSubTaskDto);
+			return StatusCode(response);
+		}
+
+		[HttpPost("removeEmployee/{toDoId:guid}")]
+		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, RemoveEmployeeDto removeEmployeeDto)
+		{
+			int response = await _taskService.RemoveEmployee(toDoId, removeEmployeeDto);
+			return StatusCode(response);
 		}
 
 		[HttpDelete("{toDoId:guid}")]
-		public async Task<ActionResult<bool>> DeleteTask(Guid toDoId)
+		public async Task<ActionResult<int>> DeleteTask(Guid toDoId)
 		{
-			bool taskDeleted = await _taskService.DeleteTask(toDoId);
-			return !taskDeleted ? NotFound() : Ok();
+			int response = await _taskService.DeleteTask(toDoId);
+			return StatusCode(response);
 		}
 
 		[HttpPost("subtask/addImage/{subTaskId:guid}")]
-		public async Task<ActionResult<string>> AddImageAndNote(Guid subTaskId, AddImagesAndNoteDto addImagesAndNoteDto)
+		public async Task<ActionResult<int>> AddImageAndNote(Guid subTaskId, AddImagesAndNoteDto addImagesAndNoteDto)
 		{
-			bool success = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto);
-			return !success ? BadRequest("Something went wrong") : Ok($"Image{(addImagesAndNoteDto.Images.Count > 1 ? "s" : "")} and/or notes successfully uploaded");
+			int response = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto);
+			return StatusCode(response);
 		}
 	}
 }
