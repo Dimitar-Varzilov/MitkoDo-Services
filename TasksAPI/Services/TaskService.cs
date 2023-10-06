@@ -14,6 +14,7 @@ namespace TasksAPI.Services
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<int> RemoveEmployee(Guid toDoId, RemoveEmployeeDto employeeId);
+		Task<int> DeleteSubTask(Guid subTaskId);
 		Task<int> DeleteTask(Guid taskId);
 		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
 	}
@@ -189,6 +190,24 @@ namespace TasksAPI.Services
 				await _taskContext.SaveChangesAsync();
 				return StatusCodes.Status200OK;
 
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine(exception.Message);
+				return StatusCodes.Status500InternalServerError;
+			}
+		}
+
+		public async Task<int> DeleteSubTask(Guid subTaskId)
+		{
+			try
+			{
+				SubTask? subTask = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
+				if (subTask == null) return StatusCodes.Status404NotFound;
+
+				_taskContext.Remove(subTask);
+				await _taskContext.SaveChangesAsync();
+				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)
 			{
