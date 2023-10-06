@@ -39,10 +39,10 @@ namespace TasksAPI.Controllers
 			return StatusCode(response);
 		}
 
-		[HttpPost("subtask/add/{taskId:guid}")]
-		public async Task<ActionResult<CreateSubTaskDto?>> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
+		[HttpPost("subtask/add/{toDoId:guid}")]
+		public async Task<ActionResult<SubTaskDto?>> AddSubTask(Guid toDoId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTaskDto? newSubTask = await _taskService.AddSubTask(taskId, createSubTaskDto);
+			SubTaskDto? newSubTask = await _taskService.AddSubTask(toDoId, createSubTaskDto);
 			return newSubTask == null ? NotFound("Task Not Found") : Ok(newSubTask);
 		}
 
@@ -58,6 +58,13 @@ namespace TasksAPI.Controllers
 		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, RemoveEmployeeDto removeEmployeeDto)
 		{
 			int response = await _taskService.RemoveEmployee(toDoId, removeEmployeeDto);
+			return StatusCode(response);
+		}
+
+		[HttpDelete("subtask/delete/{subTaskId:guid}")]
+		public async Task<ActionResult<int>> DeleteSubTask(Guid subTaskId)
+		{
+			int response = await _taskService.DeleteSubTask(subTaskId);
 			return StatusCode(response);
 		}
 
