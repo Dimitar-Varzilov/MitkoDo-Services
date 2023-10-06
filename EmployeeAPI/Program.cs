@@ -24,14 +24,7 @@ namespace EmployeeAPI
 			string dbString = envIsDev ? "EmployeeDb-dev" : "EmployeeDb";
 			builder.Services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
 			builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-			var mapperConfig = new MapperConfiguration(mc =>
-			{
-				mc.AddProfile(new AutoMapperProfile());
-			});
-			IMapper mapper = mapperConfig.CreateMapper();
-			builder.Services.AddSingleton(mapper);
-
-
+			
 			var app = builder.Build();
 
 			app.UseCors(option => option.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader());

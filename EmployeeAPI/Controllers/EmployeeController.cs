@@ -10,6 +10,13 @@ namespace EmployeeAPI.Controllers
 	{
 		private readonly IEmployeeService _employeeService = employeeService;
 
+		[HttpGet]
+		public ActionResult<IList<EmployeeDto>> GetAllEmployees()
+		{
+			IList<EmployeeDto> employees = _employeeService.GetAllEmployees();
+			return Ok(employees);
+		}
+
 		[HttpGet("{employeeId:guid}")]
 		public ActionResult<EmployeeDto> GetEmployeeById(Guid employeeId)
 		{

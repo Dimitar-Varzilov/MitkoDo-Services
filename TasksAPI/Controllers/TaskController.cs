@@ -27,7 +27,7 @@ namespace TasksAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<ToDoDto>> AddToDo(CreateToDoDto dto)
 		{
-			ToDoDto newTodo = await _taskService.AddTask(dto);
+			ToDoDto newTodo = await _taskService.AddToDo(dto);
 			return Ok(newTodo);
 		}
 
@@ -35,7 +35,14 @@ namespace TasksAPI.Controllers
 		[HttpPut("{toDoId:guid}")]
 		public async Task<ActionResult<int>> EditToDo(Guid toDoId, CreateToDoDto createSubTaskDto)
 		{
-			int response = await _taskService.EditTask(toDoId, createSubTaskDto);
+			int response = await _taskService.EditToDo(toDoId, createSubTaskDto);
+			return StatusCode(response);
+		}
+
+		[HttpPost("assignEmployee/{toDoId:guid}")]
+		public async Task<ActionResult<int>> AssignEmployee(Guid toDoId, IList<Guid> employeeIds)
+		{
+			int response = await _taskService.AssignEmployees(toDoId, employeeIds);
 			return StatusCode(response);
 		}
 
@@ -46,7 +53,6 @@ namespace TasksAPI.Controllers
 			return newSubTask == null ? NotFound("Task Not Found") : Ok(newSubTask);
 		}
 
-
 		[HttpPut("subtask/edit/{subTaskId:guid}")]
 		public async Task<ActionResult<int>> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
@@ -55,9 +61,9 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpPost("removeEmployee/{toDoId:guid}")]
-		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, RemoveEmployeeDto removeEmployeeDto)
+		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, EmployeeIdDto employeeIdDto)
 		{
-			int response = await _taskService.RemoveEmployee(toDoId, removeEmployeeDto);
+			int response = await _taskService.RemoveEmployee(toDoId, employeeIdDto);
 			return StatusCode(response);
 		}
 

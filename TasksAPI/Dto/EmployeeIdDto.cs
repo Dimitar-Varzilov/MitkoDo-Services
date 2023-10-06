@@ -1,6 +1,6 @@
 ﻿namespace TasksAPI.Dto
 {
-	public class RemoveEmployeeDto
+	public class EmployeeIdDto
 	{
 		public Guid EmployeeId { get; set; }
 	}
