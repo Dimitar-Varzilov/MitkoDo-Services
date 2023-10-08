@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "secrets1": {
+      "type": "secrets.user"
+    },
+    "mssql1": {
+      "serviceConnectorResourceId": "",
+      "containerPorts": "1435:1433",
+      "secretStore": "LocalSecretsFile",
+      "containerName": "employee_sql_server2022",
+      "containerImage": "employee_sql_server2022",
+      "type": "mssql.container",
+      "connectionId": "ConnectionStrings:EmployeeDb"
+    }
+  }
+}
