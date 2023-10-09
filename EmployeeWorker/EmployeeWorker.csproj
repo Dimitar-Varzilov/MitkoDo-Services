@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <UserSecretsId>aa20f35b-b63c-49d9-952a-e63f1c069791</UserSecretsId>
   </PropertyGroup>
@@ -16,5 +16,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="MassTransit" Version="[8.0.0,9.0)" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="[8.0.0,9.0)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gateway\Gateway.csproj" />
   </ItemGroup>
 </Project>

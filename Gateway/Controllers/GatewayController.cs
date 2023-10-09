@@ -1,23 +1,19 @@
-using Gateway.Contracts;
-using MassTransit;
+using Gateway.EventBusConfig;
+using Gateway.Events;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gateway.Controllers
 {
 	[ApiController]
 	[Route("[controller]")]
-	public class GatewayController(IBus bus) : ControllerBase
+	public class GatewayController(IEventBus eventBus) : ControllerBase
 	{
-		private readonly IBus _bus = bus;
+		private readonly IEventBus _eventBus = eventBus;
 
 		[HttpPost]
-		public async Task<IActionResult> Get([FromBody] Guid userId)
+		public IActionResult Get([FromBody] Guid userId)
 		{
-			Uri uri = new("rabbitmq://localhost/employee-worker");
-			await _bus.GetSendEndpoint(uri).Result.Send(new NewEmployee
-			{
-				UserId = userId,
-			});
+			_eventBus.PublishAsync(new UserCreatedEvent(userId));
 			return Ok();
 		}
 	}

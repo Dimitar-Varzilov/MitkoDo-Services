@@ -46,6 +46,11 @@ namespace EmployeeWorker
 						{
 							if (IsRunningInContainer)
 								cfg.Host("rabbitmq");
+							cfg.Host("localhost", "/", h =>
+							{
+								h.Username("guest");
+								h.Password("guest");
+							});
 
 							cfg.UseDelayedMessageScheduler();
 
