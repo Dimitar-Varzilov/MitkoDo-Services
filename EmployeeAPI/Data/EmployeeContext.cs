@@ -14,7 +14,6 @@ namespace EmployeeAPI.Data
 			{
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
-				builder.Property(p => p.UserId).IsRequired();
 				builder.Navigation(p => p.ToDos).AutoInclude();
 			});
 

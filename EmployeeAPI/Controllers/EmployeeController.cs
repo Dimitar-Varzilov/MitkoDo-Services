@@ -31,13 +31,6 @@ namespace EmployeeAPI.Controllers
 			return employee == null ? BadRequest("Employee Not Found") : Ok(employee);
 		}
 
-		[HttpPost]
-		public async Task<ActionResult<EmployeeDto?>> AddEmployee(CreateEmployeeDto employeeDto)
-		{
-			EmployeeDto? employeeCreated = await _employeeService.AddEmployee(employeeDto);
-			if (employeeCreated == null) return BadRequest();
-			return Ok(employeeCreated);
-		}
 		public class EmployeeDto2
 		{
 			public string UserId { get; set; } = string.Empty;
