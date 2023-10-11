@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using EmployeeAPI.Data;
+﻿using EmployeeAPI.Data;
 using EmployeeAPI.Dto;
 using EmployeeAPI.Models;
 
