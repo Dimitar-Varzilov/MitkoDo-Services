@@ -1,8 +1,10 @@
-﻿namespace AuthenticationAPI.Dto
+﻿using AuthenticationAPI.Models;
+
+namespace AuthenticationAPI.Dto
 {
-	public class UserDto
+	public class UserDto (User user)
 	{
-		public string UserId { get; set; } = string.Empty;
-		public string Email { get; set; } = string.Empty;
+		public Guid UserId { get; set; } = user.UserId;
+		public string Email { get; set; } = user.Email;
 	}
 }

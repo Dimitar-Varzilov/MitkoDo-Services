@@ -21,15 +21,27 @@ namespace AuthenticationAPI
 			bool envIsDev = builder.Environment.IsDevelopment();
 
 			//Custom services
-			string dbString = envIsDev ? "AuthDb-dev" : "AuthDb";
-			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDb")));
 			builder.Services.AddScoped<IAuthService, AuthService>();
-			var mapperConfig = new MapperConfiguration(mc =>
+
+			builder.Services.AddMassTransit(x =>
 			{
-				mc.AddProfile(new AutoMapperProfile());
+
+				x.SetKebabCaseEndpointNameFormatter();
+
+				x.UsingRabbitMq((context, cfg) =>
+				{
+					//if (IsRunningInContainer)
+					//	cfg.Host("rabbitmq");
+					cfg.Host("localhost", "/", h =>
+					{
+						h.Username("guest");
+						h.Password("guest");
+					});
+
+					cfg.ConfigureEndpoints(context);
+				});
 			});
-			IMapper mapper = mapperConfig.CreateMapper();
-			builder.Services.AddSingleton(mapper);
 
 			var app = builder.Build();
 

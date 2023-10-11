@@ -1,8 +1,9 @@
 ﻿using AuthenticationAPI.Data;
 using AuthenticationAPI.Dto;
 using AuthenticationAPI.Enums;
+using AuthenticationAPI.Events;
 using AuthenticationAPI.Models;
-using AutoMapper;
+using MassTransit;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,14 +19,14 @@ namespace AuthenticationAPI.Services
 		bool ValidateToken(string token);
 		DateTime GetTokenExpirationDate();
 	}
-	public class AuthService(IMapper mapper, AuthContext authContext, IConfiguration configuration) : IAuthService
+	public class AuthService(AuthContext authContext, IConfiguration configuration, IBus bus) : IAuthService
 	{
-		private readonly IMapper _mapper = mapper;
 		private readonly AuthContext _authContext = authContext;
 		private readonly string issuer = $"http://localhost:7145";
 		private readonly string audience = "http://localhost:5000";
 		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 16))))];
 		private readonly DateTime tokenExpirationDate = DateTime.Now.AddDays(30);
+		private readonly IBus _bus = bus;
 
 		private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
 		{
@@ -72,10 +73,12 @@ namespace AuthenticationAPI.Services
 				Role = userRole
 			};
 
-			_authContext.Users.Add(newUser);
+			User generatedUser = _authContext.Users.Add(newUser).Entity;
 			await _authContext.SaveChangesAsync();
 
-			return _mapper.Map<UserDto>(newUser);
+			await _bus.Publish(new UserCreatedEvent(newUser.UserId, dto.Name));
+
+			return new UserDto(newUser);
 		}
 
 		public string LoginUser(LoginDto request)
