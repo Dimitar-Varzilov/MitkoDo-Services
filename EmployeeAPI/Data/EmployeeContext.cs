@@ -15,6 +15,7 @@ namespace EmployeeAPI.Data
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
 				builder.Navigation(p => p.ToDos).AutoInclude();
+				builder.HasMany(p => p.ToDos).WithMany(p => p.Employees);
 			});
 
 			modelBuilder.Entity<Note>(builder =>
@@ -37,12 +38,12 @@ namespace EmployeeAPI.Data
 
 
 			modelBuilder.Entity<ToDo>(builder =>
-				{
-					builder.HasKey(p => p.ToDoId);
-					builder.Property(p => p.Title).IsRequired();
-					builder.Property(p => p.StartDate).IsRequired();
-					builder.Property(p => p.DueDate).IsRequired();
-				});
+			{
+				builder.HasKey(p => p.ToDoId);
+				builder.Property(p => p.Title).IsRequired();
+				builder.Property(p => p.StartDate).IsRequired();
+				builder.Property(p => p.DueDate).IsRequired();
+			});
 		}
 	}
 }
