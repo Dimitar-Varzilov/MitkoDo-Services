@@ -75,8 +75,8 @@ namespace AuthenticationAPI.Services
 
 			User generatedUser = _authContext.Users.Add(newUser).Entity;
 			await _authContext.SaveChangesAsync();
-
-			await _bus.Publish(new UserCreatedEvent(newUser.UserId, dto.Name));
+			if (userRole == UserRole.MEMBER)
+				await _bus.Publish(new UserCreatedEvent(newUser.UserId, dto.Name));
 
 			return new UserDto(newUser);
 		}

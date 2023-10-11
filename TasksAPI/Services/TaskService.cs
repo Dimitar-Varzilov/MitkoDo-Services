@@ -83,6 +83,16 @@ namespace TasksAPI.Services
 
 				_taskContext.Update(todo);
 				await _taskContext.SaveChangesAsync();
+
+				ToDoEditedEvent toDoEditedEvent = new()
+				{
+					DueDate = todo.DueDate,
+					StartDate = todo.StartDate,
+					Title = todo.Title,
+					ToDoId = todo.ToDoId,
+				};
+				await _bus.Publish(toDoEditedEvent);
+
 				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)
