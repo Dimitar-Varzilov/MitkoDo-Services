@@ -9,16 +9,16 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Employee/Employee.csproj", "Employee/"]
-RUN dotnet restore "Employee/Employee.csproj"
+COPY ["EmployeeAPI/EmployeeAPI.csproj", "EmployeeAPI/"]
+RUN dotnet restore "EmployeeAPI/EmployeeAPI.csproj"
 COPY . .
-WORKDIR "/src/Employee"
-RUN dotnet build "Employee.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/EmployeeAPI"
+RUN dotnet build "EmployeeAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Employee.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "EmployeeAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Employee.dll"]
+ENTRYPOINT ["dotnet", "EmployeeAPI.dll"]

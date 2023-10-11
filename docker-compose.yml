@@ -1,5 +1,5 @@
 version: '3.4'
-
+name: mitkodo-services
 services:
   tasksapi:
     image: ${DOCKER_REGISTRY-}tasksapi
@@ -20,4 +20,18 @@ services:
     build:
       context: .
       dockerfile: EmployeeAPI/Dockerfile
+
+
+  employeeworker:
+    image: ${DOCKER_REGISTRY-}employeeworker
+    build:
+      context: .
+      dockerfile: EmployeeWorker/Dockerfile
+
+
+  taskworker:
+    image: ${DOCKER_REGISTRY-}taskworker
+    build:
+      context: .
+      dockerfile: TaskWorker/Dockerfile
 
