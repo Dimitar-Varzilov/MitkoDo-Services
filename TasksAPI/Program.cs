@@ -1,4 +1,4 @@
-using AutoMapper;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using TasksAPI.Data;
 using TasksAPI.Services;
@@ -22,7 +22,28 @@ namespace TasksAPI
 			string dbString = envIsDev ? "TaskDb-dev" : "TaskDb";
 			builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
 			builder.Services.AddScoped<ITaskService, TaskService>();
-			
+
+			builder.Services.AddMassTransit(x =>
+			{
+
+				x.SetKebabCaseEndpointNameFormatter();
+
+				x.UsingRabbitMq((context, cfg) =>
+				{
+					//if (IsRunningInContainer)
+					//	cfg.Host("rabbitmq");
+					cfg.Host("localhost", "/", h =>
+					{
+						h.Username("guest");
+						h.Password("guest");
+					});
+
+					cfg.UseDelayedMessageScheduler();
+
+					cfg.ConfigureEndpoints(context);
+				});
+			});
+
 			var app = builder.Build();
 
 			app.UseCors(option => option.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());

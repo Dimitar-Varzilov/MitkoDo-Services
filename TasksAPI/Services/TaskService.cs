@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using TasksAPI.Data;
 using TasksAPI.Dto;
+using TasksAPI.Events;
 using TasksAPI.Models;
 
 namespace TasksAPI.Services
@@ -19,10 +21,11 @@ namespace TasksAPI.Services
 		Task<int> DeleteTask(Guid taskId);
 		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
 	}
-	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment) : ITaskService
+	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment, IBus bus) : ITaskService
 	{
 		private readonly TaskContext _taskContext = taskContext;
 		private readonly IWebHostEnvironment _hostingEnvironment = hostingEnvironment;
+		private readonly IBus _bus = bus;
 
 		public IList<ToDoDto> GetAllToDos()
 		{
@@ -55,8 +58,18 @@ namespace TasksAPI.Services
 			_taskContext.Add(newToDo);
 			await _taskContext.SaveChangesAsync();
 
-			ToDoDto toDoDto = new(newToDo);
-			return toDoDto;
+			ToDoAddedEvent toDoAddedEvent = new()
+			{
+				ToDoId = newToDo.ToDoId,
+				Title = newToDo.Title,
+				StartDate = newToDo.StartDate,
+				DueDate = newToDo.DueDate,
+				EmployeeIds = newToDo.Employees.Select(employee => employee.EmployeeId).ToList()
+			};
+
+			await _bus.Publish(toDoAddedEvent);
+
+			return new ToDoDto(newToDo);
 		}
 
 		public async Task<int> EditToDo(Guid taskId, CreateToDoDto createToDoDto)
