@@ -15,6 +15,7 @@ namespace EmployeeWorker
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
 				builder.Navigation(p => p.ToDos).AutoInclude();
+				builder.HasMany(p => p.ToDos).WithMany(p => p.Employees);
 			});
 
 			modelBuilder.Entity<Note>(builder =>

@@ -1,31 +1,41 @@
 namespace EmployeeWorker.Consumers
 {
-	using EmployeeWorker.Contracts;
-	using EmployeeWorker.Events;
+	using EmployeeAPI.Models;
 	using MassTransit;
+	using Microsoft.EntityFrameworkCore;
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Threading.Tasks;
+	using TasksAPI.Events;
 
 	public class ToDoAddedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<ToDoAddedEvent>
 	{
 		private readonly EmployeeContext _employeeContext = employeeContext;
-		public Task Consume(ConsumeContext<ToDoAddedEvent> context)
+		public async Task Consume(ConsumeContext<ToDoAddedEvent> context)
 		{
-			IList<Guid> employeeIds = context.Message.EmployeeIds;
+			var employeeIds = context.Message.EmployeeIds;
 			var employees = _employeeContext.Employees.Where(e => employeeIds.Contains(e.EmployeeId));
-			employees.ToList().ForEach(e => e.ToDos.Add(new ToDo()
+			ToDo newToDo = new()
 			{
 				ToDoId = context.Message.ToDoId,
 				Title = context.Message.Title,
 				StartDate = context.Message.StartDate,
 				DueDate = context.Message.DueDate
-			}
-			));
-			_employeeContext.SaveChanges();
-			return Task.CompletedTask;
+			};
+			await Console.Out.WriteLineAsync(employees.First().ToDos.Count.ToString());
+			//foreach (var employee in employees)
+			//{
+			//	IList<ToDo> todos = [.. employee.ToDos];
+			//	todos.Add(newToDo);
+			//	employee.ToDos = todos;
+
+			//}
+			employees.ToList().ForEach(e => e.ToDos.Add(newToDo));
+			//_employeeContext.UpdateRange(employees);
+			await Console.Out.WriteLineAsync(employees.First().ToDos.Count.ToString());
+			await _employeeContext.SaveChangesAsync();
 		}
 	}
 }

@@ -1,3 +1,4 @@
+using EmployeeWorker.Consumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,13 +33,9 @@ namespace EmployeeWorker
 
 						// By default, sagas are in-memory, but should be changed to a durable
 						// saga repository.
-						x.SetInMemorySagaRepositoryProvider();
-
 						var entryAssembly = Assembly.GetEntryAssembly();
 
 						x.AddConsumers(entryAssembly);
-						x.AddSagaStateMachines(entryAssembly);
-						x.AddSagas(entryAssembly);
 						x.AddActivities(entryAssembly);
 
 						x.UsingRabbitMq((context, cfg) =>
@@ -51,13 +48,19 @@ namespace EmployeeWorker
 								h.Password("guest");
 							});
 
-							cfg.UseDelayedMessageScheduler();
-
-							cfg.ConfigureEndpoints(context);
-							//cfg.ReceiveEndpoint("user-created-queue", e =>
-							//{
-							//	e.ConfigureConsumer<UserCreatedEventConsumer>(context);
-							//});
+							//cfg.ConfigureEndpoints(context);
+							cfg.ReceiveEndpoint("employee.user-created", e =>
+							{
+								e.ConfigureConsumer<UserCreatedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.todo-added", e =>
+							{
+								e.ConfigureConsumer<ToDoAddedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.todo-edited", e =>
+							{
+								e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
+							});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));
