@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using MassTransit;
 using System;
-using Gateway.Events;
-using EmployeeWorker.Models;
+using AuthenticationAPI.Events;
+using EmployeeAPI.Models;
 
 
 namespace EmployeeWorker.Consumers
@@ -13,13 +13,13 @@ namespace EmployeeWorker.Consumers
 		private readonly EmployeeContext _employeeContext = employeeContext;
 		public async Task Consume(ConsumeContext<UserCreatedEvent> context)
 		{
-
 			Console.WriteLine("Employee was created with ID: {0}", context.Message.UserId);
-			_employeeContext.Employees.Add(new Employee
+			Employee newEmployee = new()
 			{
-				UserId = context.Message.UserId,
-				Name = "Mitko"
-			});
+				EmployeeId = context.Message.UserId,
+				Name = context.Message.Name,
+			};
+			_employeeContext.Employees.Add(newEmployee);
 			await _employeeContext.SaveChangesAsync();
 		}
 	}

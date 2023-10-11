@@ -1,8 +1,7 @@
-﻿using EmployeeWorker.Models;
-using System;
-
-namespace EmployeeWorker
+﻿namespace EmployeeWorker
 {
+	using EmployeeWorker.Contracts;
+	using System;
 	public static class Utilities
 	{
 		public static bool CalculateTaskActive(ToDo toDo)

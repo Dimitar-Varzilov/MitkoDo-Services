@@ -1,4 +1,4 @@
-﻿using EmployeeWorker.Models;
+﻿using EmployeeAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeWorker
@@ -14,7 +14,6 @@ namespace EmployeeWorker
 			{
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
-				builder.Property(p => p.UserId).IsRequired();
 				builder.Navigation(p => p.ToDos).AutoInclude();
 			});
 

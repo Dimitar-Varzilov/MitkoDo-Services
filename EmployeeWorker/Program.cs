@@ -27,7 +27,6 @@ namespace EmployeeWorker
 				{
 					services.AddMassTransit(x =>
 					{
-						x.AddDelayedMessageScheduler();
 
 						x.SetKebabCaseEndpointNameFormatter();
 
@@ -55,9 +54,13 @@ namespace EmployeeWorker
 							cfg.UseDelayedMessageScheduler();
 
 							cfg.ConfigureEndpoints(context);
+							//cfg.ReceiveEndpoint("user-created-queue", e =>
+							//{
+							//	e.ConfigureConsumer<UserCreatedEventConsumer>(context);
+							//});
 						});
 					});
-					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb-dev")));
+					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));
 				});
 	}
 }
