@@ -59,7 +59,7 @@ namespace TaskWorker
 								h.Password(messageBrokerSettings.Password);
 							});
 
-							//cfg.ConfigureEndpoints(context);
+							cfg.ConfigureEndpoints(context);
 							cfg.ReceiveEndpoint("task.user-created", e =>
 							{
 								e.ConfigureConsumer<UserCreatedEventConsumer>(context);
