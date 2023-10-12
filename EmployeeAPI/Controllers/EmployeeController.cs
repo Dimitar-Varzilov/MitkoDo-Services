@@ -30,12 +30,5 @@ namespace EmployeeAPI.Controllers
 			bool? employee = _employeeService.IsEmployeeAvailable(employeeId);
 			return employee == null ? BadRequest("Employee Not Found") : Ok(employee);
 		}
-
-		public class EmployeeDto2
-		{
-			public string UserId { get; set; } = string.Empty;
-			public string Name { get; set; } = string.Empty;
-		}
-
 	}
 }

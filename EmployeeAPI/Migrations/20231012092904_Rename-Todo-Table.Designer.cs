@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeAPI.Migrations
 {
     [DbContext(typeof(EmployeeContext))]
-    [Migration("20231011115855_Add-Employee-Todo-Many-To-One")]
-    partial class AddEmployeeTodoManyToOne
+    [Migration("20231012092904_Rename-Todo-Table")]
+    partial class RenameTodoTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,7 +86,7 @@ namespace EmployeeAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("EmployeeId")
+                    b.Property<Guid>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
@@ -97,7 +97,7 @@ namespace EmployeeAPI.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("SubTask");
+                    b.ToTable("SubTasks");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.ToDo", b =>
@@ -109,9 +109,6 @@ namespace EmployeeAPI.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -121,9 +118,22 @@ namespace EmployeeAPI.Migrations
 
                     b.HasKey("ToDoId");
 
-                    b.HasIndex("EmployeeId");
+                    b.ToTable("ToDos");
+                });
 
-                    b.ToTable("ToDo");
+            modelBuilder.Entity("EmployeeToDo", b =>
+                {
+                    b.Property<Guid>("EmployeesEmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ToDosToDoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EmployeesEmployeeId", "ToDosToDoId");
+
+                    b.HasIndex("ToDosToDoId");
+
+                    b.ToTable("EmployeeToDo");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.Note", b =>
@@ -142,15 +152,8 @@ namespace EmployeeAPI.Migrations
 
             modelBuilder.Entity("EmployeeAPI.Models.SubTask", b =>
                 {
-                    b.HasOne("EmployeeAPI.Models.Employee", null)
-                        .WithMany("SubTasks")
-                        .HasForeignKey("EmployeeId");
-                });
-
-            modelBuilder.Entity("EmployeeAPI.Models.ToDo", b =>
-                {
                     b.HasOne("EmployeeAPI.Models.Employee", "Employee")
-                        .WithMany("ToDos")
+                        .WithMany("SubTasks")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -158,11 +161,24 @@ namespace EmployeeAPI.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("EmployeeToDo", b =>
+                {
+                    b.HasOne("EmployeeAPI.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeesEmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeAPI.Models.ToDo", null)
+                        .WithMany()
+                        .HasForeignKey("ToDosToDoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EmployeeAPI.Models.Employee", b =>
                 {
                     b.Navigation("SubTasks");
-
-                    b.Navigation("ToDos");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.SubTask", b =>

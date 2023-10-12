@@ -14,8 +14,8 @@ namespace EmployeeAPI.Data
 			{
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
-				builder.Navigation(p => p.ToDos).AutoInclude();
 				builder.HasMany(p => p.ToDos).WithMany(p => p.Employees);
+				builder.HasMany(p => p.SubTasks).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId);
 			});
 
 			modelBuilder.Entity<Note>(builder =>
@@ -34,6 +34,7 @@ namespace EmployeeAPI.Data
 			{
 				builder.HasKey(p => p.SubTaskId);
 				builder.Property(p => p.Title).IsRequired();
+				builder.HasOne(p => p.Employee).WithMany(p => p.SubTasks).HasForeignKey(p => p.EmployeeId);
 			});
 
 

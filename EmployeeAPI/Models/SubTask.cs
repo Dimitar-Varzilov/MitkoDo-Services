@@ -2,9 +2,11 @@
 {
 	public class SubTask
 	{
-		public Guid SubTaskId { get; set; }
+		public Guid SubTaskId { get; set; } = Guid.Empty;
 		public string Title { get; set; } = string.Empty;
-		public IList<Note> Notes { get; set; } = new List<Note>();
-		public IList<Picture> Pictures { get; set; } = new List<Picture>();
+		public IList<Note> Notes { get; set; } = [];
+		public IList<Picture> Pictures { get; set; } = [];
+		public Guid EmployeeId { get; set; } = Guid.Empty;
+		public Employee Employee { get; set; } = new Employee();
 	}
 }

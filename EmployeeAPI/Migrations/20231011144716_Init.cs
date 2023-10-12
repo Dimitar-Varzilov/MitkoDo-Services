@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EmployeeAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,12 +16,25 @@ namespace EmployeeAPI.Migrations
                 columns: table => new
                 {
                     EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Employees", x => x.EmployeeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ToDo",
+                columns: table => new
+                {
+                    ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ToDo", x => x.ToDoId);
                 });
 
             migrationBuilder.CreateTable(
@@ -43,22 +56,27 @@ namespace EmployeeAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ToDo",
+                name: "EmployeeToDo",
                 columns: table => new
                 {
-                    ToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    EmployeesEmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ToDosToDoId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ToDo", x => x.ToDoId);
+                    table.PrimaryKey("PK_EmployeeToDo", x => new { x.EmployeesEmployeeId, x.ToDosToDoId });
                     table.ForeignKey(
-                        name: "FK_ToDo_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
+                        name: "FK_EmployeeToDo_Employees_EmployeesEmployeeId",
+                        column: x => x.EmployeesEmployeeId,
                         principalTable: "Employees",
-                        principalColumn: "EmployeeId");
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmployeeToDo_ToDo_ToDosToDoId",
+                        column: x => x.ToDosToDoId,
+                        principalTable: "ToDo",
+                        principalColumn: "ToDoId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +116,11 @@ namespace EmployeeAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_EmployeeToDo_ToDosToDoId",
+                table: "EmployeeToDo",
+                column: "ToDosToDoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Note_SubTaskId",
                 table: "Note",
                 column: "SubTaskId");
@@ -111,16 +134,14 @@ namespace EmployeeAPI.Migrations
                 name: "IX_SubTask_EmployeeId",
                 table: "SubTask",
                 column: "EmployeeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ToDo_EmployeeId",
-                table: "ToDo",
-                column: "EmployeeId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "EmployeeToDo");
+
             migrationBuilder.DropTable(
                 name: "Note");
 

@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeAPI.Migrations
 {
     [DbContext(typeof(EmployeeContext))]
-    [Migration("20230929141556_Initial-Migration")]
-    partial class InitialMigration
+    [Migration("20231011144716_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "7.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -34,9 +34,6 @@ namespace EmployeeAPI.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("EmployeeId");
 
@@ -109,11 +106,11 @@ namespace EmployeeAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -121,9 +118,22 @@ namespace EmployeeAPI.Migrations
 
                     b.HasKey("ToDoId");
 
-                    b.HasIndex("EmployeeId");
-
                     b.ToTable("ToDo");
+                });
+
+            modelBuilder.Entity("EmployeeToDo", b =>
+                {
+                    b.Property<Guid>("EmployeesEmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ToDosToDoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EmployeesEmployeeId", "ToDosToDoId");
+
+                    b.HasIndex("ToDosToDoId");
+
+                    b.ToTable("EmployeeToDo");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.Note", b =>
@@ -147,18 +157,24 @@ namespace EmployeeAPI.Migrations
                         .HasForeignKey("EmployeeId");
                 });
 
-            modelBuilder.Entity("EmployeeAPI.Models.ToDo", b =>
+            modelBuilder.Entity("EmployeeToDo", b =>
                 {
                     b.HasOne("EmployeeAPI.Models.Employee", null)
-                        .WithMany("ToDos")
-                        .HasForeignKey("EmployeeId");
+                        .WithMany()
+                        .HasForeignKey("EmployeesEmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EmployeeAPI.Models.ToDo", null)
+                        .WithMany()
+                        .HasForeignKey("ToDosToDoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.Employee", b =>
                 {
                     b.Navigation("SubTasks");
-
-                    b.Navigation("ToDos");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.SubTask", b =>

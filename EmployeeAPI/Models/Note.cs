@@ -2,7 +2,7 @@
 {
 	public class Note
 	{
-		public Guid NoteId { get; set; }
+		public Guid NoteId { get; set; } = Guid.Empty;
 		public string Title { get; set; } = string.Empty;
 	}
 }
