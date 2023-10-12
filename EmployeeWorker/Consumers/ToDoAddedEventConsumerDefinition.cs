@@ -2,12 +2,17 @@ namespace EmployeeWorker.Consumers
 {
 	using MassTransit;
 
-	public class ToDoAddedEventConsumerDefinition :
-		ConsumerDefinition<ToDoAddedEventConsumer>
+	public class ToDoAddedEventConsumerDefinition : ConsumerDefinition<ToDoAddedEventConsumer>
 	{
-		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<ToDoAddedEventConsumer> consumerConfigurator)
+		public ToDoAddedEventConsumerDefinition()
 		{
-			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+			ConcurrentMessageLimit = 1;
+
+		}
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator configurator, IConsumerConfigurator<ToDoAddedEventConsumer> consumerConfigurator,
+			IRegistrationContext context)
+		{
+			configurator.UseMessageRetry(r => r.Intervals(100, 1000, 2000, 5000));
 		}
 	}
 }

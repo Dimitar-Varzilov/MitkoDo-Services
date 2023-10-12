@@ -13,9 +13,7 @@
 		{
 			ToDoEditedEvent message = context.Message;
 
-			var employees = _employeeContext.Employees.Where(e => e.ToDos.Any(t => t.ToDoId == message.ToDoId));
-
-			ToDo toDoToEdit = employees.First().ToDos.First();
+			ToDo toDoToEdit = _employeeContext.ToDos.FirstOrDefault(t => t.ToDoId == message.ToDoId);
 
 			_employeeContext.Entry(toDoToEdit).CurrentValues.SetValues(message);
 
