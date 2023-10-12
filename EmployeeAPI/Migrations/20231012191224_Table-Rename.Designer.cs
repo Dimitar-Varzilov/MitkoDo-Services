@@ -4,6 +4,7 @@ using EmployeeAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeAPI.Migrations
 {
     [DbContext(typeof(EmployeeContext))]
-    partial class EmployeeContextModelSnapshot : ModelSnapshot
+    [Migration("20231012191224_Table-Rename")]
+    partial class TableRename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace EmployeeAPI.Migrations
 
                     b.HasIndex("SubTaskId");
 
-                    b.ToTable("Notes");
+                    b.ToTable("Note");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.Picture", b =>
@@ -74,7 +77,7 @@ namespace EmployeeAPI.Migrations
 
                     b.HasIndex("SubTaskId");
 
-                    b.ToTable("Pictures");
+                    b.ToTable("Picture");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.SubTask", b =>
@@ -94,7 +97,7 @@ namespace EmployeeAPI.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("SubTasks");
+                    b.ToTable("SubTask");
                 });
 
             modelBuilder.Entity("EmployeeAPI.Models.ToDo", b =>
@@ -115,7 +118,7 @@ namespace EmployeeAPI.Migrations
 
                     b.HasKey("ToDoId");
 
-                    b.ToTable("ToDos");
+                    b.ToTable("ToDo");
                 });
 
             modelBuilder.Entity("EmployeeToDo", b =>
