@@ -14,7 +14,7 @@
 		public Guid ToDoId { get; set; }
 		public ToDo Todo { get; set; } = new ToDo();
 
-		public ICollection<Note> Notes { get; set; } = [];
-		public ICollection<Picture> Pictures { get; set; } = [];
+		public IList<Note> Notes { get; set; } = [];
+		public IList<Picture> Pictures { get; set; } = [];
 	}
 }

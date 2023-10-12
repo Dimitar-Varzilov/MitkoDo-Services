@@ -24,7 +24,6 @@ namespace TasksAPI.Data
 				builder.HasMany(p => p.SubTasks).WithOne(p => p.Todo).HasForeignKey(p => p.ToDoId);
 				builder.Navigation(p => p.SubTasks).AutoInclude();
 				builder.HasMany(p => p.Employees).WithMany(p => p.ToDos);
-				builder.Navigation(p => p.Employees).AutoInclude();
 			});
 
 			modelBuilder.Entity<SubTask>(builder =>
