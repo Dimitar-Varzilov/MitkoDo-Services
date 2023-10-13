@@ -61,6 +61,10 @@ namespace EmployeeWorker
 							{
 								e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
 							});
+							cfg.ReceiveEndpoint("employee.employee-assigned", e =>
+							{
+								e.ConfigureConsumer<AssignEmployeeEventConsumerConsumer>(context);
+							});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));

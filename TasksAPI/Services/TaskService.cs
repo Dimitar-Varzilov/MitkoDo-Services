@@ -99,8 +99,12 @@ namespace TasksAPI.Services
 
 				var combinedEmployees = todo.Employees.Union(employee);
 				todo.Employees = [.. combinedEmployees];
+
 				_taskContext.Update(todo);
 				await _taskContext.SaveChangesAsync();
+
+				await _bus.Publish(new AssignEmployeeEvent(todo.ToDoId, employeeIds));
+
 				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)
