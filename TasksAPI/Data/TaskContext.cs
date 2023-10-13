@@ -22,7 +22,6 @@ namespace TasksAPI.Data
 				builder.Property(p => p.StartDate).IsRequired();
 				builder.Property(p => p.DueDate).IsRequired();
 				builder.HasMany(p => p.SubTasks).WithOne(p => p.Todo).HasForeignKey(p => p.ToDoId);
-				builder.Navigation(p => p.SubTasks).AutoInclude();
 				builder.HasMany(p => p.Employees).WithMany(p => p.ToDos);
 			});
 

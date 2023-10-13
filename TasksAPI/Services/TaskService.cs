@@ -94,7 +94,7 @@ namespace TasksAPI.Services
 				ToDo? todo = _taskContext.ToDos.FirstOrDefault(toDo => toDo.ToDoId == toDoId);
 				if (todo == null) return StatusCodes.Status404NotFound;
 
-				IList<Employee?> employeesToAssign = [.. _taskContext.Employees.Where(employee => 
+				IList<Employee?> employeesToAssign = [.. _taskContext.Employees.Where(employee =>
 				employeeIds.Any(id => id == employee.EmployeeId)
 				&& !employee.ToDos.Any(t => t.ToDoId == toDoId))];
 				if (employeesToAssign.Count == 0) return StatusCodes.Status404NotFound;
@@ -142,12 +142,14 @@ namespace TasksAPI.Services
 		{
 			try
 			{
-				var query = _taskContext.ToDos.Where(toDo => toDo.StartDate < DateTime.Now && toDo.DueDate > DateTime.Now && toDo.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).ToList();
+				var query = _taskContext.ToDos.Where(toDo => toDo.StartDate < DateTime.Now && toDo.DueDate > DateTime.Now && toDo.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId)).Include(t => t.SubTasks.Where(s => s.SubTaskId == subTaskId)).ToList();
 				if (query.Count == 0) return StatusCodes.Status400BadRequest;
 
-				SubTask subtaskToEdit = query.First().SubTasks.First();
-				_taskContext.Entry(subtaskToEdit).CurrentValues.SetValues(createSubTaskDto);
+				SubTask subTaskToEdit = query.First().SubTasks.First();
+				_taskContext.Entry(subTaskToEdit).CurrentValues.SetValues(createSubTaskDto);
 				await _taskContext.SaveChangesAsync();
+
+				await _bus.Publish(new SubTaskEditedEvent(subTaskToEdit));
 
 				return StatusCodes.Status200OK;
 			}
