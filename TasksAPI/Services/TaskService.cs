@@ -94,12 +94,12 @@ namespace TasksAPI.Services
 				ToDo? todo = _taskContext.ToDos.FirstOrDefault(toDo => toDo.ToDoId == toDoId);
 				if (todo == null) return StatusCodes.Status404NotFound;
 
-				IList<Employee?> employee = [.. _taskContext.Employees.Where(employee => 
+				IList<Employee?> employeesToAssign = [.. _taskContext.Employees.Where(employee => 
 				employeeIds.Any(id => id == employee.EmployeeId)
 				&& !employee.ToDos.Any(t => t.ToDoId == toDoId))];
-				if (employee.Count == 0) return StatusCodes.Status404NotFound;
+				if (employeesToAssign.Count == 0) return StatusCodes.Status404NotFound;
 
-				var combinedEmployees = todo.Employees.Union(employee);
+				var combinedEmployees = todo.Employees.Union(employeesToAssign);
 				todo.Employees = [.. combinedEmployees];
 
 				_taskContext.Update(todo);
