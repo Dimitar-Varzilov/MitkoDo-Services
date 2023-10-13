@@ -69,6 +69,10 @@ namespace EmployeeWorker
 							{
 								e.ConfigureConsumer<SubTaskEditedEventConsumer>(context);
 							});
+							cfg.ReceiveEndpoint("employee.employees-removed", e =>
+							{
+								e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);
+							});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));

@@ -12,7 +12,7 @@ namespace EmployeeWorker.Consumers
 		IConsumer<AssignEmployeeEvent>
 	{
 		private readonly EmployeeContext _employeeContext = employeeContext;
-		public Task Consume(ConsumeContext<AssignEmployeeEvent> context)
+		public async Task Consume(ConsumeContext<AssignEmployeeEvent> context)
 		{
 			try
 			{
@@ -21,12 +21,11 @@ namespace EmployeeWorker.Consumers
 				ToDo toDo = _employeeContext.ToDos.FirstOrDefault(t => t.ToDoId == message.ToDoId);
 
 				employees.ForEach(e => e.ToDos.Add(toDo));
-				_employeeContext.SaveChanges();
-				return Task.CompletedTask;
+			 await	_employeeContext.SaveChangesAsync();
 			}
 			catch (Exception e)
 			{
-				return Task.FromException(e);
+				await Console.Out.WriteLineAsync(e.Message);
 			}
 
 		}

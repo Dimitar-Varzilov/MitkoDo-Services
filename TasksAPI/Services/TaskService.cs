@@ -16,7 +16,7 @@ namespace TasksAPI.Services
 		Task<int> AssignEmployees(Guid toDoId, IList<Guid> employeeIds);
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
-		Task<int> RemoveEmployee(Guid toDoId, EmployeeIdDto employeeId);
+		Task<int> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeId);
 		Task<int> DeleteSubTask(Guid subTaskId);
 		Task<int> DeleteTask(Guid taskId);
 		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
@@ -102,7 +102,6 @@ namespace TasksAPI.Services
 				var combinedEmployees = todo.Employees.Union(employeesToAssign);
 				todo.Employees = [.. combinedEmployees];
 
-				_taskContext.Update(todo);
 				await _taskContext.SaveChangesAsync();
 
 				IList<Guid> includedEmployees = [.. todo.Employees.Select(employee => employee.EmployeeId)];
@@ -194,17 +193,24 @@ namespace TasksAPI.Services
 			}
 		}
 
-		public async Task<int> RemoveEmployee(Guid toDoId, EmployeeIdDto dto)
+		public async Task<int> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeIdsDto)
 		{
 			try
 			{
-				var toDos = _taskContext.ToDos.Where(task => task.ToDoId == toDoId).Include(todo => todo.Employees.Where(employee => employee.EmployeeId == dto.EmployeeId)).ToList();
-				if (toDos == null) return StatusCodes.Status400BadRequest;
+				var toDos = _taskContext.ToDos.Where(task => task.ToDoId == toDoId).Include(todo => todo.Employees.Where(employee => employeeIdsDto.EmployeeIds.Any(id => employee.EmployeeId == id) && employee.ToDos.Any(t => t.ToDoId == toDoId))).ToList();
+				if (toDos.Count == 0) return StatusCodes.Status400BadRequest;
 
 				ToDo toDo = toDos.First();
 				if (toDo.Employees.Count == 0) return StatusCodes.Status404NotFound;
-				toDo.Employees.Remove(toDo.Employees.First());
+
+				IList<Guid> excludedEmployeesIds = [.. toDo.Employees.Select(employee => employee.EmployeeId)];
+
+				toDo.Employees = [];
+
 				await _taskContext.SaveChangesAsync();
+
+				await _bus.Publish(new EmployeesRemovedEvent(toDo.ToDoId, excludedEmployeesIds));
+
 				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)

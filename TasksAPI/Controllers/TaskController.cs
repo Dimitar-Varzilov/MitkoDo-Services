@@ -61,7 +61,7 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpPost("removeEmployee/{toDoId:guid}")]
-		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, EmployeeIdDto employeeIdDto)
+		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeIdDto)
 		{
 			int response = await _taskService.RemoveEmployee(toDoId, employeeIdDto);
 			return StatusCode(response);
