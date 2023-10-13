@@ -8,12 +8,11 @@ namespace EmployeeWorker.Consumers
 		public PictureAndNoteAddedEventConsumerDefinition()
 		{
 			ConcurrentMessageLimit = 1;
-
 		}
-		protected override void ConfigureConsumer(IReceiveEndpointConfigurator configurator, IConsumerConfigurator<PictureAndNoteAddedEventConsumer> consumerConfigurator,
-			IRegistrationContext context)
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<PictureAndNoteAddedEventConsumer> consumerConfigurator, IRegistrationContext context)
 		{
-			configurator.UseMessageRetry(r => r.Intervals(100, 1000, 2000, 5000));
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
 		}
 	}
 }

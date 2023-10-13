@@ -2,7 +2,8 @@ namespace EmployeeWorker.Consumers
 {
 	using MassTransit;
 
-	public class UserCreatedEventConsumerDefinition : ConsumerDefinition<UserCreatedEventConsumer>
+	public class UserCreatedEventConsumerDefinition :
+		ConsumerDefinition<UserCreatedEventConsumer>
 	{
 		public UserCreatedEventConsumerDefinition()
 		{
