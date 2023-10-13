@@ -48,11 +48,19 @@ namespace EmployeeWorker
 								h.Password("guest");
 							});
 
-							cfg.ConfigureEndpoints(context);
+							//cfg.ConfigureEndpoints(context);
 							cfg.ReceiveEndpoint("employee.user-created", e =>
-{
-	e.ConfigureConsumer<UserCreatedEventConsumer>(context);
-});
+							{
+								e.ConfigureConsumer<UserCreatedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.todo-added", e =>
+							{
+								e.ConfigureConsumer<ToDoAddedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.todo-edited", e =>
+							{
+								e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
+							});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));
