@@ -33,8 +33,6 @@ namespace TasksAPI.Data
 				builder.Property(p => p.NotesCountToBeCompleted).IsRequired().HasDefaultValue(1);
 				builder.Property(p => p.PicturesCountToBeCompleted).IsRequired().HasDefaultValue(0);
 				builder.HasOne(p => p.Todo).WithMany(p => p.SubTasks).HasForeignKey(p => p.ToDoId).IsRequired();
-				builder.Navigation(p => p.Pictures).AutoInclude();
-				builder.Navigation(p => p.Notes).AutoInclude();
 			});
 
 			modelBuilder.Entity<Employee>(builder =>

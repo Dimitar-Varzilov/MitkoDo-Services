@@ -69,6 +69,10 @@ namespace EmployeeWorker
 							{
 								e.ConfigureConsumer<SubTaskEditedEventConsumer>(context);
 							});
+							cfg.ReceiveEndpoint("employee.picture-and-note-added", e =>
+							{
+								e.ConfigureConsumer<PictureAndNoteAddedEventConsumer>(context);
+							});
 							cfg.ReceiveEndpoint("employee.employees-removed", e =>
 							{
 								e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);

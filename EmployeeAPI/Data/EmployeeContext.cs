@@ -19,7 +19,7 @@ namespace EmployeeAPI.Data
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
 				builder.HasMany(p => p.ToDos).WithMany(p => p.Employees);
-				builder.HasMany(p => p.SubTasks).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId);
+				builder.HasMany(p => p.SubTasks).WithMany(p => p.Employees);
 				builder.Navigation(p => p.SubTasks).AutoInclude();
 				builder.Navigation(p => p.ToDos).AutoInclude();
 
@@ -43,7 +43,7 @@ namespace EmployeeAPI.Data
 			{
 				builder.HasKey(p => p.SubTaskId);
 				builder.Property(p => p.Title).IsRequired();
-				builder.HasOne(p => p.Employee).WithMany(p => p.SubTasks).HasForeignKey(p => p.EmployeeId);
+				builder.HasMany(p => p.Employees).WithMany(p => p.SubTasks);
 				builder.HasMany(p => p.Pictures).WithOne(p => p.SubTask).HasForeignKey(p => p.SubTaskId);
 				builder.HasMany(p => p.Notes).WithOne(p => p.SubTask).HasForeignKey(p => p.SubTaskId);
 			});

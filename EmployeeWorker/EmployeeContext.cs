@@ -8,8 +8,6 @@ namespace EmployeeWorker
 		public DbSet<Employee> Employees { get; set; }
 		public DbSet<SubTask> SubTasks { get; set; }
 		public DbSet<ToDo> ToDos { get; set; }
-		public DbSet<Picture> Pictures { get; set; }
-		public DbSet<Note> Notes { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -19,26 +17,31 @@ namespace EmployeeWorker
 				builder.HasKey(p => p.EmployeeId);
 				builder.Property(p => p.Name).IsRequired();
 				builder.HasMany(p => p.ToDos).WithMany(p => p.Employees);
-				builder.HasMany(p => p.SubTasks).WithOne(p => p.Employee).HasForeignKey(p => p.EmployeeId);
+				builder.HasMany(p => p.SubTasks).WithMany(p => p.Employees);
+
 			});
 
 			modelBuilder.Entity<Note>(builder =>
 			{
 				builder.HasKey(p => p.NoteId);
 				builder.Property(p => p.Title).IsRequired();
+				builder.HasOne(p => p.SubTask).WithMany(p => p.Notes).HasForeignKey(p => p.SubTaskId);
 			});
 
 			modelBuilder.Entity<Picture>(builder =>
 			{
 				builder.HasKey(p => p.PictureId);
 				builder.Property(p => p.Path).IsRequired();
+				builder.HasOne(p => p.SubTask).WithMany(p => p.Pictures).HasForeignKey(p => p.SubTaskId);
 			});
 
 			modelBuilder.Entity<SubTask>(builder =>
 			{
 				builder.HasKey(p => p.SubTaskId);
 				builder.Property(p => p.Title).IsRequired();
-				builder.HasOne(p => p.Employee).WithMany(p => p.SubTasks).HasForeignKey(p => p.EmployeeId);
+				builder.HasMany(p => p.Employees).WithMany(p => p.SubTasks);
+				builder.HasMany(p => p.Pictures).WithOne(p => p.SubTask).HasForeignKey(p => p.SubTaskId);
+				builder.HasMany(p => p.Notes).WithOne(p => p.SubTask).HasForeignKey(p => p.SubTaskId);
 			});
 
 
