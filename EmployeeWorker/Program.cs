@@ -63,7 +63,7 @@ namespace EmployeeWorker
 							});
 							cfg.ReceiveEndpoint("employee.employee-assigned", e =>
 							{
-								e.ConfigureConsumer<AssignEmployeeEventConsumerConsumer>(context);
+								e.ConfigureConsumer<AssignEmployeeEventConsumer>(context);
 							});
 						});
 					});

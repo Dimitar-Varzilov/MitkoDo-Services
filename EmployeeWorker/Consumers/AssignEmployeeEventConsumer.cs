@@ -8,7 +8,7 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
-	public class AssignEmployeeEventConsumerConsumer(EmployeeContext employeeContext) :
+	public class AssignEmployeeEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<AssignEmployeeEvent>
 	{
 		private readonly EmployeeContext _employeeContext = employeeContext;

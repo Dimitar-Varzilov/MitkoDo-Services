@@ -94,8 +94,10 @@ namespace TasksAPI.Services
 				ToDo? todo = _taskContext.ToDos.FirstOrDefault(toDo => toDo.ToDoId == toDoId);
 				if (todo == null) return StatusCodes.Status404NotFound;
 
-				IList<Employee?> employee = [.. _taskContext.Employees.Where(employee => employeeIds.Any(id => id == employee.EmployeeId))];
-				if (employee == null) return StatusCodes.Status404NotFound;
+				IList<Employee?> employee = [.. _taskContext.Employees.Where(employee => 
+				employeeIds.Any(id => id == employee.EmployeeId)
+				&& !employee.ToDos.Any(t => t.ToDoId == toDoId))];
+				if (employee.Count == 0) return StatusCodes.Status404NotFound;
 
 				var combinedEmployees = todo.Employees.Union(employee);
 				todo.Employees = [.. combinedEmployees];
@@ -103,7 +105,9 @@ namespace TasksAPI.Services
 				_taskContext.Update(todo);
 				await _taskContext.SaveChangesAsync();
 
-				await _bus.Publish(new AssignEmployeeEvent(todo.ToDoId, employeeIds));
+				IList<Guid> includedEmployees = [.. todo.Employees.Select(employee => employee.EmployeeId)];
+
+				await _bus.Publish(new AssignEmployeeEvent(todo.ToDoId, includedEmployees));
 
 				return StatusCodes.Status200OK;
 			}
