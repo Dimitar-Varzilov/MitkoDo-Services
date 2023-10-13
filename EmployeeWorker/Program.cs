@@ -63,7 +63,7 @@ namespace EmployeeWorker
 							});
 							cfg.ReceiveEndpoint("employee.employee-assigned", e =>
 							{
-								e.ConfigureConsumer<AssignEmployeeEventConsumer>(context);
+								e.ConfigureConsumer<EmployeeAssignedEventConsumer>(context);
 							});
 							cfg.ReceiveEndpoint("employee.subtask-edited", e =>
 							{
@@ -72,6 +72,14 @@ namespace EmployeeWorker
 							cfg.ReceiveEndpoint("employee.employees-removed", e =>
 							{
 								e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.todo-deleted", e =>
+							{
+								e.ConfigureConsumer<ToDoDeletedEventConsumer>(context);
+							});
+							cfg.ReceiveEndpoint("employee.subtask-deleted", e =>
+							{
+								e.ConfigureConsumer<SubTaskDeletedEventConsumer>(context);
 							});
 						});
 					});

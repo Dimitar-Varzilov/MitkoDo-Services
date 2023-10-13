@@ -8,7 +8,6 @@ namespace EmployeeWorker.Consumers
 		public ToDoAddedEventConsumerDefinition()
 		{
 			ConcurrentMessageLimit = 1;
-
 		}
 		protected override void ConfigureConsumer(IReceiveEndpointConfigurator configurator, IConsumerConfigurator<ToDoAddedEventConsumer> consumerConfigurator, IRegistrationContext context)
 		{

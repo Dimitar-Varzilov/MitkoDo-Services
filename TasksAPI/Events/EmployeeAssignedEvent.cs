@@ -1,15 +1,15 @@
 ﻿namespace TasksAPI.Events
 {
-	public class AssignEmployeeEvent
+	public class EmployeeAssignedEvent
 	{
 		public Guid ToDoId { get; set; }
 		public IList<Guid> EmployeeIds { get; set; } = [];
-        public AssignEmployeeEvent()
+        public EmployeeAssignedEvent()
         {
             
         }
 
-        public AssignEmployeeEvent(Guid toDoId, IList<Guid> employeeIds)
+        public EmployeeAssignedEvent(Guid toDoId, IList<Guid> employeeIds)
         {
             ToDoId = toDoId;
 			EmployeeIds = employeeIds;

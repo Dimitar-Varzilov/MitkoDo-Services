@@ -77,7 +77,7 @@ namespace TasksAPI.Controllers
 		[HttpDelete("{toDoId:guid}")]
 		public async Task<ActionResult<int>> DeleteTask(Guid toDoId)
 		{
-			int response = await _taskService.DeleteTask(toDoId);
+			int response = await _taskService.DeleteToDo(toDoId);
 			return StatusCode(response);
 		}
 

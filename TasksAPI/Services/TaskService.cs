@@ -18,7 +18,7 @@ namespace TasksAPI.Services
 		Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<int> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeId);
 		Task<int> DeleteSubTask(Guid subTaskId);
-		Task<int> DeleteTask(Guid taskId);
+		Task<int> DeleteToDo(Guid taskId);
 		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
 	}
 	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment, IBus bus) : ITaskService
@@ -106,7 +106,7 @@ namespace TasksAPI.Services
 
 				IList<Guid> includedEmployees = [.. todo.Employees.Select(employee => employee.EmployeeId)];
 
-				await _bus.Publish(new AssignEmployeeEvent(todo.ToDoId, includedEmployees));
+				await _bus.Publish(new EmployeeAssignedEvent(todo.ToDoId, includedEmployees));
 
 				return StatusCodes.Status200OK;
 			}
@@ -220,17 +220,19 @@ namespace TasksAPI.Services
 			}
 		}
 
-		public async Task<int> DeleteTask(Guid id)
+		public async Task<int> DeleteToDo(Guid id)
 		{
 			try
 			{
-				ToDo? taskFound = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == id);
-				if (taskFound == null) return StatusCodes.Status404NotFound;
+				ToDo? toDoToDelete = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == id);
+				if (toDoToDelete == null) return StatusCodes.Status404NotFound;
 
-				_taskContext.Remove(taskFound);
+				_taskContext.Remove(toDoToDelete);
 				await _taskContext.SaveChangesAsync();
-				return StatusCodes.Status200OK;
 
+				await _bus.Publish(new ToDoDeletedEvent(toDoToDelete.ToDoId));
+
+				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)
 			{
@@ -248,6 +250,9 @@ namespace TasksAPI.Services
 
 				_taskContext.Remove(subTask);
 				await _taskContext.SaveChangesAsync();
+
+				await _bus.Publish(new SubTaskDeletedEvent(subTask.SubTaskId));
+
 				return StatusCodes.Status200OK;
 			}
 			catch (Exception exception)

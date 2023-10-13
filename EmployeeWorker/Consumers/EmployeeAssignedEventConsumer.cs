@@ -8,15 +8,15 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
-	public class AssignEmployeeEventConsumer(EmployeeContext employeeContext) :
-		IConsumer<AssignEmployeeEvent>
+	public class EmployeeAssignedEventConsumer(EmployeeContext employeeContext) :
+		IConsumer<EmployeeAssignedEvent>
 	{
 		private readonly EmployeeContext _employeeContext = employeeContext;
-		public async Task Consume(ConsumeContext<AssignEmployeeEvent> context)
+		public async Task Consume(ConsumeContext<EmployeeAssignedEvent> context)
 		{
 			try
 			{
-				AssignEmployeeEvent message = context.Message;
+				EmployeeAssignedEvent message = context.Message;
 				List<Employee> employees = [.. _employeeContext.Employees.Where(e => message.EmployeeIds.Contains(e.EmployeeId))];
 				ToDo toDo = _employeeContext.ToDos.FirstOrDefault(t => t.ToDoId == message.ToDoId);
 
