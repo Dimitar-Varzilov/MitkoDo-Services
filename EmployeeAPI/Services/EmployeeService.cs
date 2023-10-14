@@ -9,6 +9,7 @@ namespace EmployeeAPI.Services
 	{
 		IList<EmployeeDto> GetAllEmployees();
 		EmployeeDto? GetEmployeeById(Guid employeeId);
+		EmployeeDetailsDto? GetEmployeeDetails(Guid employeeId);
 		bool? IsEmployeeAvailable(Guid employeeId);
 	}
 	public class EmployeeService(EmployeeContext employeeContext) : IEmployeeService
@@ -27,6 +28,14 @@ namespace EmployeeAPI.Services
 			if (employee == null) return null;
 
 			return new EmployeeDto(employee);
+		}
+
+		public EmployeeDetailsDto? GetEmployeeDetails(Guid employeeId)
+		{
+			Employee? employee = _employeeContext.Employees.FirstOrDefault(x => x.EmployeeId == employeeId);
+			if (employee == null) return null;
+
+			return new EmployeeDetailsDto(employee);
 		}
 
 		public bool? IsEmployeeAvailable(Guid employeeId)

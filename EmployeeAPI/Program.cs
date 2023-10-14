@@ -2,7 +2,13 @@
 using AutoMapper;
 using EmployeeAPI.Data;
 using EmployeeAPI.Services;
+using EmployeeAPI.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Text;
 
 namespace EmployeeAPI
 {
@@ -11,18 +17,30 @@ namespace EmployeeAPI
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
-
+			var configuration = builder.Configuration;
 			// Add services to the container.
 
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-			bool envIsDev = builder.Environment.IsDevelopment();
-
+			builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+			builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(options =>
+				{
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = true,
+						ValidIssuer = configuration["JWT:ValidIssuer"],
+						ValidateAudience = true,
+						ValidAudience = configuration["JWT:ValidAudience"],
+						ValidateIssuerSigningKey = true,
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!)),
+						ValidateLifetime = true
+					};
+				});
 			//Custom services
-			string dbString = envIsDev ? "EmployeeDb-dev" : "EmployeeDb";
-			builder.Services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			builder.Services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("EmployeeDb")));
 			builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 			
 			var app = builder.Build();
@@ -38,6 +56,7 @@ namespace EmployeeAPI
 
 			app.UseHttpsRedirection();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 
