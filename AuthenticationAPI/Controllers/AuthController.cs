@@ -46,17 +46,26 @@ namespace AuthenticationAPI.Controllers
 			});
 			return Ok(responseToken);
 		}
-
 		[HttpPost("verifyToken")]
-		public IActionResult ValidateToken()
+		public IActionResult ValidateTokenFromCookie()
 		{
-			bool tryGetValue = Request.Cookies.TryGetValue("token", out string? token);
-			if (!tryGetValue || token == null) return BadRequest("Invalid token or error getting token");
+			string? token = Utilities.GetJwtTokenFromCookie(Request);
+			if (token == null)
+				return BadRequest("Invalid token or error getting token");
+			return _authService.ValidateToken(token) ? Ok() : BadRequest();
+		}
+
+		[HttpPost("verifyTokenFromHeader")]
+		public IActionResult ValidateTokenFromHeader()
+		{
+			string? token = Utilities.GetJwtTokenFromHeader(Request);
+			if (token == null)
+				return BadRequest("Invalid token or error getting token");
 			return _authService.ValidateToken(token) ? Ok() : BadRequest();
 		}
 
 		[HttpPost("logout")]
-		public IActionResult Logout()
+		public ActionResult<string> Logout()
 		{
 			Response.Cookies.Delete("token");
 			return Ok("You have been logged out");

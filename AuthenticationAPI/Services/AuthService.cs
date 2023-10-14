@@ -14,7 +14,7 @@ namespace AuthenticationAPI.Services
 
 	public interface IAuthService
 	{
-		Task<UserDto?> RegisterUser(RegisterDto user, UserRole userRole = UserRole.MEMBER);
+		Task<UserDto?> RegisterUser(RegisterDto user, string userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
 		bool ValidateToken(string token);
 		DateTime GetTokenExpirationDate();
@@ -22,9 +22,9 @@ namespace AuthenticationAPI.Services
 	public class AuthService(AuthContext authContext, IConfiguration configuration, IBus bus) : IAuthService
 	{
 		private readonly AuthContext _authContext = authContext;
-		private readonly string issuer = $"http://localhost:7145";
-		private readonly string audience = "http://localhost:5000";
-		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("AppSettings:Secret").Value ?? string.Concat(Enumerable.Repeat(Guid.NewGuid().ToString(), 16))))];
+		private readonly string issuer = configuration.GetSection("JWT:ValidIssuer").Value!;
+		private readonly string audience = configuration.GetSection("JWT:ValidAudience").Value!;
+		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value!))];
 		private readonly DateTime tokenExpirationDate = DateTime.Now.AddDays(30);
 		private readonly IBus _bus = bus;
 
@@ -47,16 +47,19 @@ namespace AuthenticationAPI.Services
 			List<Claim> claims =
 			[
 				new Claim(ClaimTypes.Name, user.Email),
-				new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+				new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+				new Claim(ClaimTypes.Role, user.Role),
 			];
+			if (user.Role == UserRole.MANAGER)
+				claims.Add(new Claim(ClaimTypes.Role, UserRole.MEMBER));
 
 			var cred = new SigningCredentials(securityKeys[0], SecurityAlgorithms.HmacSha512Signature);
-			var token = new JwtSecurityToken(claims: claims, expires: expires, signingCredentials: cred, issuer: issuer, audience: audience);
+			var token = new JwtSecurityToken(issuer, audience, claims, DateTime.Now, expires, signingCredentials: cred);
 			var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 			return jwt;
 		}
 
-		public async Task<UserDto?> RegisterUser(RegisterDto dto, UserRole userRole = UserRole.MEMBER)
+		public async Task<UserDto?> RegisterUser(RegisterDto dto, string userRole = UserRole.MEMBER)
 		{
 			User? user = _authContext.Users.FirstOrDefault(user => user.Email == dto.Email);
 			if (user != null)
@@ -113,8 +116,7 @@ namespace AuthenticationAPI.Services
 					IssuerSigningKeys = securityKeys,
 					ValidateLifetime = true,
 				};
-				var isValid = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken) ?? throw new SecurityTokenValidationException("Token is not valid");
-
+				ClaimsPrincipal claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
 				return true;
 			}
 			catch (SecurityTokenValidationException ex)
@@ -123,6 +125,7 @@ namespace AuthenticationAPI.Services
 				return false;
 			}
 		}
+
 
 		public DateTime GetTokenExpirationDate()
 		{

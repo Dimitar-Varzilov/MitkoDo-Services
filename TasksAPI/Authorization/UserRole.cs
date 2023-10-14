@@ -1,4 +1,4 @@
-﻿namespace AuthenticationAPI.Enums
+﻿namespace TasksAPI.Authorization
 {
 	public static class UserRole
 	{

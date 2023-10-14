@@ -1,7 +1,14 @@
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Security.Claims;
+using System.Text;
 using TasksAPI.Data;
 using TasksAPI.Services;
+using TasksAPI.Swagger;
 namespace TasksAPI
 {
 	public class Program
@@ -9,6 +16,7 @@ namespace TasksAPI
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
+			var configuration = builder.Configuration;
 			//Utilities.GenerateGuids(20);
 			// Add services to the container.
 
@@ -16,11 +24,22 @@ namespace TasksAPI
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-			bool envIsDev = builder.Environment.IsDevelopment();
-
-			//Custom services
-			string dbString = envIsDev ? "TaskDb-dev" : "TaskDb";
-			builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(dbString)));
+			builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+			builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddJwtBearer(options =>
+				{
+					options.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuer = true,
+						ValidIssuer = configuration["JWT:ValidIssuer"],
+						ValidateAudience = true,
+						ValidAudience = configuration["JWT:ValidAudience"],
+						ValidateIssuerSigningKey = true,
+						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!)),
+						ValidateLifetime = true
+					};
+				});
+			builder.Services.AddDbContext<TaskContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("TaskDb")));
 			builder.Services.AddScoped<ITaskService, TaskService>();
 
 			builder.Services.AddMassTransit(x =>
@@ -57,8 +76,8 @@ namespace TasksAPI
 
 			app.UseHttpsRedirection();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
-
 
 			app.MapControllers();
 

@@ -1,8 +1,11 @@
 using AuthenticationAPI.Data;
 using AuthenticationAPI.Services;
+using AuthenticationAPI.Swagger;
 using AutoMapper;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace AuthenticationAPI
 {
@@ -18,6 +21,7 @@ namespace AuthenticationAPI
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
+			builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 			bool envIsDev = builder.Environment.IsDevelopment();
 
 			//Custom services
@@ -56,6 +60,7 @@ namespace AuthenticationAPI
 
 			app.UseHttpsRedirection();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.MapControllers();

@@ -8,7 +8,7 @@ namespace AuthenticationAPI.Models
 		public string Email { get; set; } = string.Empty;
 		public byte[] PasswordHash { get; set; } = [];
 		public byte[] PasswordSalt { get; set; } = [];
-		public UserRole Role { get; set; } = UserRole.MEMBER;
+		public string Role { get; set; } = UserRole.MEMBER;
 	}
 
 }
