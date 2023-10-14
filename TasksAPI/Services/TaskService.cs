@@ -12,7 +12,7 @@ namespace TasksAPI.Services
 		IList<ToDoDto> GetAllToDos();
 		IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId);
 		Task<ToDoDto> AddToDo(CreateToDoDto createToDoDto);
-		Task<int> EditToDo(Guid toDoId, CreateToDoDto task);
+		Task<int> EditToDo(Guid toDoId, EditToDoDto task);
 		Task<int> AssignEmployees(Guid toDoId, IList<Guid> employeeIds);
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
 		Task<int> EditSubTask(Guid subTaskId, CreateSubTaskDto subTask);
@@ -63,14 +63,14 @@ namespace TasksAPI.Services
 			return new ToDoDto(newToDo);
 		}
 
-		public async Task<int> EditToDo(Guid taskId, CreateToDoDto createToDoDto)
+		public async Task<int> EditToDo(Guid taskId, EditToDoDto editToDoDto)
 		{
 			try
 			{
 				ToDo? toDo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
 				if (toDo == null) return StatusCodes.Status404NotFound;
 
-				_taskContext.Entry(toDo).CurrentValues.SetValues(createToDoDto);
+				_taskContext.Entry(toDo).CurrentValues.SetValues(editToDoDto);
 
 				_taskContext.Update(toDo);
 				await _taskContext.SaveChangesAsync();

@@ -40,9 +40,9 @@ namespace TasksAPI.Controllers
 
 		[HttpPut("{toDoId:guid}")]
 		[Authorize(Roles = UserRole.MANAGER)]
-		public async Task<ActionResult<int>> EditToDo(Guid toDoId, CreateToDoDto createSubTaskDto)
+		public async Task<ActionResult<int>> EditToDo(Guid toDoId, EditToDoDto editToDoDto)
 		{
-			int response = await _taskService.EditToDo(toDoId, createSubTaskDto);
+			int response = await _taskService.EditToDo(toDoId, editToDoDto);
 			return StatusCode(response);
 		}
 
