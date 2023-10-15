@@ -15,11 +15,6 @@
   </ItemGroup>
 
     <ItemGroup>
-    <Folder Include="../MessageBroker" />
-    <Folder Include="Contracts\" />
-  </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AuthenticationAPI\AuthenticationAPI.csproj" />
       <ProjectReference Include="..\TasksAPI\TasksAPI.csproj" />
     </ItemGroup>
