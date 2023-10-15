@@ -36,7 +36,9 @@ namespace TasksAPI.Services
 
 		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			var toDos = _taskContext.ToDos.Include(t => t.Employees.Where(e => e.EmployeeId == employeeId)).Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes);
+			IQueryable<ToDo> todo = _taskContext.ToDos.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId));
+            if (!todo.Any()) return [];
+			IList<ToDo> toDos = [..todo.Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes)];
 
 			return [.. toDos.Select(t => new GetAllTaskByEmployeeIdDto(t))];
 		}

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TasksAPI.Authorization;
 using TasksAPI.Dto;
 using TasksAPI.Services;
@@ -22,9 +23,28 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpGet("byEmployeeId/{employeeId:guid}")]
-		[Authorize(Roles = UserRole.MEMBER)]
+		[Authorize(Roles = UserRole.MANAGER)]
 		public ActionResult<IList<GetAllTaskByEmployeeIdDto>> GetTasksByEmployeeId(Guid employeeId)
 		{
+			IList<GetAllTaskByEmployeeIdDto> toDos = _taskService.GetAllTasksAndSubTasksByEmployeeId(employeeId);
+			return Ok(toDos);
+		}
+
+		[HttpGet("byToken")]
+		[Authorize(Roles = UserRole.MEMBER)]
+		public ActionResult<IList<GetAllTaskByEmployeeIdDto>> GetTasksFromToken()
+		{
+			string? guid = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (guid == null)
+			{
+				return Unauthorized();
+			}
+			bool success = Guid.TryParse(guid, out Guid employeeId);
+			if (!success)
+			{
+				return BadRequest();
+			};
+			
 			IList<GetAllTaskByEmployeeIdDto> toDos = _taskService.GetAllTasksAndSubTasksByEmployeeId(employeeId);
 			return Ok(toDos);
 		}
