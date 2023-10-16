@@ -7,7 +7,7 @@ namespace EmployeeAPI.Dto
 		public Guid EmployeeId { get; set; } = Guid.Empty;
 		public string Name { get; set; } = string.Empty;
 		public bool IsAvailable { get; set; } = false;
-		public IList<ToDoDto> ToDos { get; set; } = [];
+		public IList<ToDoDto> EmployeeToDos { get; set; } = [];
 
 		public EmployeeDto() { }
 
@@ -16,7 +16,7 @@ namespace EmployeeAPI.Dto
 			EmployeeId = employee.EmployeeId;
 			Name = employee.Name;
 			IsAvailable = employee.IsAvailable;
-			ToDos = [.. employee.ToDos
+			EmployeeToDos = [.. employee.ToDos
 				.Select(x => new ToDoDto(x))];
 		}
 	}
