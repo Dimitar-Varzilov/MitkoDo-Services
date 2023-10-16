@@ -1,12 +1,26 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
-COPY ["EmployeeWorker.csproj", "EmployeeWorker/"]
-RUN dotnet restore "EmployeeWorker/EmployeeWorker.csproj"
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-COPY . EmployeeWorker/.
-RUN dotnet publish -c Release -o /app EmployeeWorker/EmployeeWorker.csproj 
-
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS publish
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+USER app
 WORKDIR /app
-COPY --from=build /app ./
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["EmployeeWorker/EmployeeWorker.csproj", "EmployeeWorker/"]
+COPY ["AuthenticationAPI/AuthenticationAPI.csproj", "AuthenticationAPI/"]
+COPY ["EmployeeAPI/EmployeeAPI.csproj", "EmployeeAPI/"]
+COPY ["TasksAPI/TasksAPI.csproj", "TasksAPI/"]
+RUN dotnet restore "./EmployeeWorker/./EmployeeWorker.csproj"
+COPY . .
+WORKDIR "/src/EmployeeWorker"
+RUN dotnet build "./EmployeeWorker.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./EmployeeWorker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "EmployeeWorker.dll"]

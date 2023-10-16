@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <UserSecretsId>aa20f35b-b63c-49d9-952a-e63f1c069791</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="MassTransit" Version="8.1.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
   </ItemGroup>
 
   <ItemGroup>

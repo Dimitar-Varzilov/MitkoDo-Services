@@ -42,11 +42,15 @@ namespace EmployeeWorker
 						{
 							if (IsRunningInContainer)
 								cfg.Host("rabbitmq");
-							cfg.Host("localhost", "/", h =>
+							else
 							{
-								h.Username("guest");
-								h.Password("guest");
-							});
+
+								cfg.Host("localhost", "/", h =>
+								{
+									h.Username("guest");
+									h.Password("guest");
+								});
+							}
 
 							cfg.ConfigureEndpoints(context);
 							//cfg.ReceiveEndpoint("employee.user-created", e =>

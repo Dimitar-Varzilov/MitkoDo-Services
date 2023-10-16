@@ -3,7 +3,7 @@ name: mitkodo-services
 services:
   messages:
     container_name: rabbitmq
-    image: rabbitmq:3.11.7-management
+    image: masstransit/rabbitmq:latest
     # ports:
     #   - "15672:15672"
     #   - "5672:5672"
@@ -71,6 +71,9 @@ services:
   employeeworker:
     environment:
       - DOTNET_ENVIRONMENT=Development
+      - MessageBroker__Host=rabbitmq
+    env_file:
+      - .env
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
     depends_on:
