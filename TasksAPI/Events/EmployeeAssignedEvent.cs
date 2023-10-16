@@ -2,7 +2,7 @@
 {
 	public class EmployeeAssignedEvent
 	{
-		public Guid ToDoId { get; set; }
+		public Guid ToDoId { get;  set; }
 		public IList<Guid> EmployeeIds { get; set; } = [];
         public EmployeeAssignedEvent()
         {

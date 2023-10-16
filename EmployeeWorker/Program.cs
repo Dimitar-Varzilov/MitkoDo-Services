@@ -48,43 +48,47 @@ namespace EmployeeWorker
 								h.Password("guest");
 							});
 
-							//cfg.ConfigureEndpoints(context);
-							cfg.ReceiveEndpoint("employee.user-created", e =>
-							{
-								e.ConfigureConsumer<UserCreatedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.todo-added", e =>
-							{
-								e.ConfigureConsumer<ToDoAddedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.todo-edited", e =>
-							{
-								e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.employee-assigned", e =>
-							{
-								e.ConfigureConsumer<EmployeeAssignedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.subtask-edited", e =>
-							{
-								e.ConfigureConsumer<SubTaskEditedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.picture-and-note-added", e =>
-							{
-								e.ConfigureConsumer<PictureAndNoteAddedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.employees-removed", e =>
-							{
-								e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.todo-deleted", e =>
-							{
-								e.ConfigureConsumer<ToDoDeletedEventConsumer>(context);
-							});
-							cfg.ReceiveEndpoint("employee.subtask-deleted", e =>
-							{
-								e.ConfigureConsumer<SubTaskDeletedEventConsumer>(context);
-							});
+							cfg.ConfigureEndpoints(context);
+							//cfg.ReceiveEndpoint("employee.user-created", e =>
+							//{
+							//	e.ConfigureConsumer<UserCreatedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.todo-added", e =>
+							//{
+							//	e.ConfigureConsumer<ToDoAddedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.todo-edited", e =>
+							//{
+							//	e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.employee-assigned", e =>
+							//{
+							//	e.ConfigureConsumer<EmployeeAssignedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.subtask-added", e =>
+							//{
+							//	e.ConfigureConsumer<SubTaskAddedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.subtask-edited", e =>
+							//{
+							//	e.ConfigureConsumer<SubTaskEditedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.picture-note-added", e =>
+							//{
+							//	e.ConfigureConsumer<PictureAndNoteAddedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.employees-removed", e =>
+							//{
+							//	e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.todo-deleted", e =>
+							//{
+							//	e.ConfigureConsumer<ToDoDeletedEventConsumer>(context);
+							//});
+							//cfg.ReceiveEndpoint("employee.subtask-deleted", e =>
+							//{
+							//	e.ConfigureConsumer<SubTaskDeletedEventConsumer>(context);
+							//});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));

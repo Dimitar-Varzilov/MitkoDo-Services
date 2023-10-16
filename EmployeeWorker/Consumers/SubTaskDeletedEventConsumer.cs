@@ -7,6 +7,19 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
+	public class SubTaskDeletedEventConsumerDefinition :
+		ConsumerDefinition<SubTaskDeletedEventConsumer>
+	{
+		public SubTaskDeletedEventConsumerDefinition()
+		{
+			EndpointName = "employee.subtask-deleted";
+		}
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<SubTaskDeletedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+		}
+	}
 	public class SubTaskDeletedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<SubTaskDeletedEvent>
 	{

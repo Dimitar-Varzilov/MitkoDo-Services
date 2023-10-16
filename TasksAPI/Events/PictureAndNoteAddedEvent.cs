@@ -1,4 +1,5 @@
-﻿using TasksAPI.Dto;
+﻿using System.Text.Json.Serialization;
+using TasksAPI.Dto;
 using TasksAPI.Models;
 
 namespace TasksAPI.Events
@@ -11,16 +12,17 @@ namespace TasksAPI.Events
 		public IList<PictureDto> Pictures { get; set; } = [];
 		public NoteDto Note { get; set; } = new();
 
-		public PictureAndNoteAddedEvent()
+		[JsonConstructor]
+		private PictureAndNoteAddedEvent()
 		{
 
 		}
 
-		public PictureAndNoteAddedEvent(SubTask subTask, AddImagesAndNoteDto addImagesAndNoteDto)
+		public PictureAndNoteAddedEvent(SubTask subTask, AddImagesAndNoteDto addImagesAndNoteDto, Guid employeeId)
 		{
 			SubTaskId = subTask.SubTaskId;
 			SubTaskTitle = subTask.Title;
-			EmployeeId = addImagesAndNoteDto.EmployeeId;
+			EmployeeId = employeeId;
 			Pictures = [.. subTask.Pictures.Select(p => new PictureDto(p))];
 			Note = new NoteDto(subTask.Notes.First());
 		}

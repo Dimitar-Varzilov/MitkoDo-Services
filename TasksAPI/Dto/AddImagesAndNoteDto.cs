@@ -7,6 +7,5 @@ namespace TasksAPI.Dto
 		public List<IFormFile> Images { get; set; } = [];
 		[Required]
 		public string Note { get; set; } = string.Empty;
-		public Guid EmployeeId { get; set; }
 	}
 }

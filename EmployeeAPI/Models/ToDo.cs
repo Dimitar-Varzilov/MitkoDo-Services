@@ -10,6 +10,6 @@
 		{
 			get => Utilities.CalculateTaskActive(StartDate, DueDate);
 		}
-		public ICollection<Employee> Employees { get; set; } = [];
+		public IList<Employee> Employees { get; set; } = [];
 	}
 }

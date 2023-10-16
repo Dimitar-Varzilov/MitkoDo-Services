@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Security.Claims;
 using System.Text;
 using TasksAPI.Data;
 using TasksAPI.Services;
@@ -17,7 +16,6 @@ namespace TasksAPI
 		{
 			var builder = WebApplication.CreateBuilder(args);
 			var configuration = builder.Configuration;
-			//Utilities.GenerateGuids(20);
 			// Add services to the container.
 
 			builder.Services.AddControllers();

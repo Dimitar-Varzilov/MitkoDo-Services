@@ -5,6 +5,20 @@
 	using System.Linq;
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
+
+	internal class ToDoEditedEventConsumerDefinition :
+		ConsumerDefinition<ToDoEditedEventConsumer>
+	{
+		public ToDoEditedEventConsumerDefinition()
+		{
+			EndpointName = "employee.todo-edited";
+		}
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator configurator, IConsumerConfigurator<ToDoEditedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			configurator.UseMessageRetry(r => r.Intervals(100, 1000, 2000, 5000));
+		}
+	}
 	public class ToDoEditedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<ToDoEditedEvent>
 	{

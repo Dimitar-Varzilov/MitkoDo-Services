@@ -1,4 +1,5 @@
-﻿using TasksAPI.Models;
+﻿using System.Text.Json.Serialization;
+using TasksAPI.Models;
 
 namespace TasksAPI.Events
 {
@@ -9,7 +10,7 @@ namespace TasksAPI.Events
 		public DateTime StartDate { get; set; }
 		public DateTime DueDate { get; set; }
 		public IList<Guid> EmployeeIds { get; set; } = [];
-
+		[JsonConstructor]
 		public ToDoAddedEvent()
 		{
 

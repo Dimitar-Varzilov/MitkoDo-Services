@@ -10,8 +10,9 @@ namespace TasksAPI.Services
 	public interface ITaskService
 	{
 		IList<ToDoDto> GetAllToDos();
+		ToDoDto? GetToDoById(Guid toDoId);
 		IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId);
-		Task<ToDoDto> AddToDo(CreateToDoDto createToDoDto);
+		Task<ToDoDto> AddToDoAsync(CreateToDoDto createToDoDto);
 		Task<int> EditToDo(Guid toDoId, EditToDoDto task);
 		Task<int> AssignEmployees(Guid toDoId, IList<Guid> employeeIds);
 		Task<SubTaskDto?> AddSubTask(Guid subTaskId, CreateSubTaskDto subTask);
@@ -19,7 +20,7 @@ namespace TasksAPI.Services
 		Task<int> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeId);
 		Task<int> DeleteSubTask(Guid subTaskId);
 		Task<int> DeleteToDo(Guid taskId);
-		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto);
+		Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto, Guid employeeId);
 	}
 	public class TaskService(TaskContext taskContext, IWebHostEnvironment hostingEnvironment, IBus bus) : ITaskService
 	{
@@ -29,22 +30,45 @@ namespace TasksAPI.Services
 
 		public IList<ToDoDto> GetAllToDos()
 		{
-			var toDos = _taskContext.ToDos.Include(t => t.Employees).Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes);
+			var toDos = _taskContext.ToDos
+				.Include(t => t.Employees)
+				.Include(t => t.SubTasks)
+				.ThenInclude(t => t.Pictures)
+				.Include(t => t.SubTasks)
+				.ThenInclude(t => t.Notes);
 
 			return [.. toDos.Select(t => new ToDoDto(t))];
 		}
 
+		public ToDoDto? GetToDoById(Guid toDoId)
+		{
+			ToDo? toDo = _taskContext.ToDos
+				.Where(task => task.ToDoId == toDoId)
+				.Include(t => t.Employees)
+				.Include(t => t.SubTasks)
+					.ThenInclude(t => t.Pictures)
+				.Include(t => t.SubTasks)
+					.ThenInclude(t => t.Notes)
+				.FirstOrDefault();
+
+			if (toDo == null) return null;
+
+			return new ToDoDto(toDo);
+		}
+
 		public IList<GetAllTaskByEmployeeIdDto> GetAllTasksAndSubTasksByEmployeeId(Guid employeeId)
 		{
-			IQueryable<ToDo> todo = _taskContext.ToDos.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId));
-            if (!todo.Any()) return [];
-			IList<ToDo> toDos = [..todo.Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes)];
+			IQueryable<ToDo> todo = _taskContext.ToDos
+				.Where(t => t.Employees.Any(e => e.EmployeeId == employeeId));
+
+			if (!todo.Any()) return [];
+			IList<ToDo> toDos = [.. todo.Include(t => t.SubTasks).ThenInclude(t => t.Pictures).Include(t => t.SubTasks).ThenInclude(t => t.Notes)];
 
 			return [.. toDos.Select(t => new GetAllTaskByEmployeeIdDto(t))];
 		}
 
 
-		public async Task<ToDoDto> AddToDo(CreateToDoDto createToDoDto)
+		public async Task<ToDoDto> AddToDoAsync(CreateToDoDto createToDoDto)
 		{
 			ToDo newToDo = new()
 			{
@@ -96,9 +120,10 @@ namespace TasksAPI.Services
 				ToDo? todo = _taskContext.ToDos.FirstOrDefault(toDo => toDo.ToDoId == toDoId);
 				if (todo == null) return StatusCodes.Status404NotFound;
 
-				IList<Employee?> employeesToAssign = [.. _taskContext.Employees.Where(employee =>
-				employeeIds.Any(id => id == employee.EmployeeId)
-				&& !employee.ToDos.Any(t => t.ToDoId == toDoId))];
+				IList<Employee?> employeesToAssign = [.. _taskContext.Employees
+					.Where(employee => employeeIds
+					.Any(id => id == employee.EmployeeId) && !employee.ToDos
+					.Any(t => t.ToDoId == toDoId))];
 				if (employeesToAssign.Count == 0) return StatusCodes.Status404NotFound;
 
 				var combinedEmployees = todo.Employees.Union(employeesToAssign);
@@ -108,7 +133,7 @@ namespace TasksAPI.Services
 
 				IList<Guid> includedEmployees = [.. todo.Employees.Select(employee => employee.EmployeeId)];
 
-				await _bus.Publish(new EmployeeAssignedEvent(todo.ToDoId, includedEmployees));
+				await _bus.Publish(new EmployeeAssignedEvent(toDoId, employeeIds));
 
 				return StatusCodes.Status200OK;
 			}
@@ -119,21 +144,26 @@ namespace TasksAPI.Services
 			}
 		}
 
-		public async Task<SubTaskDto?> AddSubTask(Guid taskId, CreateSubTaskDto createSubTaskDto)
+		public async Task<SubTaskDto?> AddSubTask(Guid toDoId, CreateSubTaskDto createSubTaskDto)
 		{
 			if (createSubTaskDto.NotesCountToBeCompleted == 0) return null;
-			ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == taskId);
+			ToDo? todo = _taskContext.ToDos.FirstOrDefault(task => task.ToDoId == toDoId);
 			if (todo == null) return null;
 			if (!Utilities.IsTaskActive(todo)) return null;
 
 			SubTask newSubTask = new()
 			{
+				SubTaskId = Guid.NewGuid(),
 				Title = createSubTaskDto.Title,
 				Description = createSubTaskDto.Description,
 				PicturesCountToBeCompleted = createSubTaskDto.PicturesCountToBeCompleted,
 				NotesCountToBeCompleted = createSubTaskDto.NotesCountToBeCompleted,
+				Todo = todo
 			};
-			todo.SubTasks.Add(newSubTask);
+			_taskContext.Add(newSubTask);
+
+			await _bus.Publish(new SubTaskAddedEvent(newSubTask));
+
 			await _taskContext.SaveChangesAsync();
 
 			return new SubTaskDto(newSubTask);
@@ -162,7 +192,7 @@ namespace TasksAPI.Services
 
 		}
 
-		public async Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto)
+		public async Task<int> AddSubTaskImagesAndNote(Guid subTaskId, AddImagesAndNoteDto dto, Guid employeeId)
 		{
 			try
 			{
@@ -184,7 +214,7 @@ namespace TasksAPI.Services
 				subTask.Notes.Add(new() { Title = dto.Note });
 				await _taskContext.SaveChangesAsync();
 
-				await _bus.Publish(new PictureAndNoteAddedEvent(subTask, dto));
+				await _bus.Publish(new PictureAndNoteAddedEvent(subTask, dto, employeeId));
 
 				return StatusCodes.Status201Created;
 			}

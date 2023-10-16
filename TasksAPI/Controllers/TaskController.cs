@@ -22,6 +22,15 @@ namespace TasksAPI.Controllers
 			return Ok(toDos);
 		}
 
+		[HttpGet("{toDoId:guid}")]
+		[Authorize(Roles = UserRole.MANAGER)]
+		public ActionResult<IList<ToDoDto>> GetToDoById(Guid toDoId)
+		{
+			ToDoDto? toDo = _taskService.GetToDoById(toDoId);
+			if (toDo == null) return NotFound("Task Not Found");
+			return Ok(toDo);
+		}
+
 		[HttpGet("byEmployeeId/{employeeId:guid}")]
 		[Authorize(Roles = UserRole.MANAGER)]
 		public ActionResult<IList<GetAllTaskByEmployeeIdDto>> GetTasksByEmployeeId(Guid employeeId)
@@ -34,26 +43,18 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MEMBER)]
 		public ActionResult<IList<GetAllTaskByEmployeeIdDto>> GetTasksFromToken()
 		{
-			string? guid = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-			if (guid == null)
-			{
-				return Unauthorized();
-			}
-			bool success = Guid.TryParse(guid, out Guid employeeId);
-			if (!success)
-			{
-				return BadRequest();
-			};
-			
-			IList<GetAllTaskByEmployeeIdDto> toDos = _taskService.GetAllTasksAndSubTasksByEmployeeId(employeeId);
+			Guid? employeeId = Utilities.GetEmployeeId(User);
+			if (employeeId == null) return Unauthorized();
+
+			IList<GetAllTaskByEmployeeIdDto> toDos = _taskService.GetAllTasksAndSubTasksByEmployeeId((Guid)employeeId);
 			return Ok(toDos);
 		}
 
 		[HttpPost]
-		[Authorize(Roles = UserRole.MANAGER)]
+		//[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<ToDoDto>> AddToDo(CreateToDoDto dto)
 		{
-			ToDoDto newTodo = await _taskService.AddToDo(dto);
+			ToDoDto newTodo = await _taskService.AddToDoAsync(dto);
 			return Ok(newTodo);
 		}
 
@@ -92,7 +93,7 @@ namespace TasksAPI.Controllers
 
 		[HttpPost("removeEmployee/{toDoId:guid}")]
 		[Authorize(Roles = UserRole.MANAGER)]
-		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, EmployeeIdsDto employeeIdDto)
+		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, [FromBody] EmployeeIdsDto employeeIdDto)
 		{
 			int response = await _taskService.RemoveEmployee(toDoId, employeeIdDto);
 			return StatusCode(response);
@@ -118,7 +119,9 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MEMBER)]
 		public async Task<ActionResult<int>> AddImageAndNote(Guid subTaskId, AddImagesAndNoteDto addImagesAndNoteDto)
 		{
-			int response = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto);
+			Guid? employeeId = Utilities.GetEmployeeId(User);
+			if (employeeId == null) return Unauthorized();
+			int response = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto, (Guid)employeeId);
 			return StatusCode(response);
 		}
 	}

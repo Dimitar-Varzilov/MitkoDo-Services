@@ -2,6 +2,6 @@
 {
 	public class EmployeeIdsDto
 	{
-		public IList<Guid> EmployeeIds { get; set; } = [];
+		public ICollection<Guid> EmployeeIds { get; set; } = [];
 	}
 }

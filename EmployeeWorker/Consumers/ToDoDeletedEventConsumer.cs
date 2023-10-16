@@ -6,6 +6,21 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
+	public class ToDoDeletedEventConsumerDefinition :
+		ConsumerDefinition<ToDoDeletedEventConsumer>
+	{
+		public ToDoDeletedEventConsumerDefinition()
+		{
+			EndpointName = "employee.todo-deleted";
+		}
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<ToDoDeletedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+			endpointConfigurator.UseCircuitBreaker();
+		}
+	}
+
 	public class ToDoDeletedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<ToDoDeletedEvent>
 	{

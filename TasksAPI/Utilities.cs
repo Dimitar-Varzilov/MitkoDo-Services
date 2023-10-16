@@ -1,4 +1,5 @@
-﻿using TasksAPI.Enums;
+﻿using System.Security.Claims;
+using TasksAPI.Enums;
 using TasksAPI.Models;
 
 namespace TasksAPI
@@ -42,18 +43,17 @@ namespace TasksAPI
 			return result;
 		}
 
-		public static List<Guid> GenerateGuids(int count)
+		public static Guid? GetEmployeeId(ClaimsPrincipal claimsPrincipal)
 		{
-			var guids = new List<Guid>();
+			string? employeeIdString = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+			if (employeeIdString == null)
+				return null;
 
-			for (int i = 0; i < count; i++)
-			{
-				guids.Add(Guid.NewGuid());
-			}
+			bool success = Guid.TryParse(employeeIdString, out Guid employeeId);
+			if (!success)
+				return null;
 
-			File.WriteAllLines("D:\\coding\\Diadraw\\MitkoDo\\20Guids.txt", guids.ConvertAll(x => x.ToString()));
-
-			return guids;
+			return employeeId;
 		}
 	}
 }

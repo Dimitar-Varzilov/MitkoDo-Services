@@ -7,11 +7,25 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
+	public class ToDoAddedEventConsumerDefinition :
+		ConsumerDefinition<ToDoAddedEventConsumer>
+	{
+		public ToDoAddedEventConsumerDefinition()
+		{
+			EndpointName = "employee.todo-added";
+		}
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<ToDoAddedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+		}
+	}
+
 	public class ToDoAddedEventConsumer(EmployeeContext employeeContext) :
-		IConsumer<ToDoAddedEvent>
+	IConsumer<ToDoAddedEvent>
 	{
 		private readonly EmployeeContext _employeeContext = employeeContext;
-		public Task Consume(ConsumeContext<ToDoAddedEvent> context)
+		public async Task Consume(ConsumeContext<ToDoAddedEvent> context)
 		{
 
 			ToDoAddedEvent message = context.Message;
@@ -21,12 +35,12 @@ namespace EmployeeWorker.Consumers
 				ToDoId = message.ToDoId,
 				Title = message.Title,
 				StartDate = message.StartDate,
-				DueDate = message.DueDate
+				DueDate = message.DueDate,
+				Employees = employees
+
 			};
-			_employeeContext.ToDos.Add(newToDo);
-			employees.ForEach(e => e.ToDos.Add(newToDo));
-			_employeeContext.SaveChanges();
-			return Task.CompletedTask;
+			await _employeeContext.AddAsync(newToDo);
+			await _employeeContext.SaveChangesAsync();
 		}
 	}
 }

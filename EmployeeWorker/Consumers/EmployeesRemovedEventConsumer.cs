@@ -9,6 +9,19 @@ namespace EmployeeWorker.Consumers
 	using System.Threading.Tasks;
 	using TasksAPI.Events;
 
+	public class EmployeesRemovedEventConsumerDefinition :
+		ConsumerDefinition<EmployeesRemovedEventConsumer>
+	{
+		public EmployeesRemovedEventConsumerDefinition()
+		{
+			ConcurrentMessageLimit = 1;
+			EndpointName = "employee.employees-removed";
+		}
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<EmployeesRemovedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+		}
+	}
 	public class EmployeesRemovedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<EmployeesRemovedEvent>
 	{

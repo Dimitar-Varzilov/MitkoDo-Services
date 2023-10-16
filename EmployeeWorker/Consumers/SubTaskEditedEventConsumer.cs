@@ -7,6 +7,19 @@ namespace EmployeeWorker.Consumers
 	using MassTransit;
 	using TasksAPI.Events;
 
+	public class SubTaskEditedEventConsumerDefinition :
+		ConsumerDefinition<SubTaskEditedEventConsumer>
+	{
+		public SubTaskEditedEventConsumerDefinition()
+		{
+			EndpointName = "employee.subtask-edited";
+		}
+
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<SubTaskEditedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+		}
+	}
 	public class SubTaskEditedEventConsumer(EmployeeContext employeeContext) :
 		IConsumer<SubTaskEditedEvent>
 	{

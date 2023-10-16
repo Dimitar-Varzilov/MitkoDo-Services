@@ -6,6 +6,5 @@
 		public string Title { get; set; } = string.Empty;
 		public IList<Note> Notes { get; set; } = [];
 		public IList<Picture> Pictures { get; set; } = [];
-		public IList<Employee> Employees { get; set; } = [];
 	}
 }

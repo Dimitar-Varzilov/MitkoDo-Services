@@ -6,5 +6,6 @@
 		public string Title { get; set; } = string.Empty;
 		public Guid SubTaskId { get; set; } = Guid.Empty;
 		public SubTask SubTask { get; set; } = new();
+		public Guid EmployeeId { get; set; } = Guid.Empty;
 	}
 }

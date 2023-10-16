@@ -6,6 +6,20 @@ using System.Threading.Tasks;
 
 namespace EmployeeWorker.Consumers
 {
+
+	public class UserCreatedEventConsumerDefinition :
+		ConsumerDefinition<UserCreatedEventConsumer>
+	{
+		public UserCreatedEventConsumerDefinition()
+		{
+			EndpointName = "employee.user-created";
+		}
+		protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<UserCreatedEventConsumer> consumerConfigurator, IRegistrationContext context)
+		{
+			endpointConfigurator.UseMessageRetry(r => r.Intervals(500, 1000));
+			endpointConfigurator.UseCircuitBreaker();
+		}
+	}
 	public class UserCreatedEventConsumer(EmployeeContext employeeContext) :
 	IConsumer<UserCreatedEvent>
 	{
