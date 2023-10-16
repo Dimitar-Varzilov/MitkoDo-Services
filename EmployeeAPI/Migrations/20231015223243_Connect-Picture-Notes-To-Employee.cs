@@ -21,12 +21,12 @@ namespace EmployeeAPI.Migrations
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            //migrationBuilder.AddColumn<Guid>(
-            //    name: "EmployeeId",
-            //    table: "Notes",
-            //    type: "uniqueidentifier",
-            //    nullable: false,
-            //    defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+			migrationBuilder.AddColumn<Guid>(
+				name: "EmployeeId",
+				table: "Notes",
+				type: "uniqueidentifier",
+				nullable: false,
+				defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pictures_EmployeeId",
@@ -38,15 +38,15 @@ namespace EmployeeAPI.Migrations
                 table: "Notes",
                 column: "EmployeeId");
 
-            //migrationBuilder.AddForeignKey(
-            //    name: "FK_Notes_Employees_EmployeeId",
-            //    table: "Notes",
-            //    column: "EmployeeId",
-            //    principalTable: "Employees",
-            //    principalColumn: "EmployeeId",
-            //    onDelete: ReferentialAction.Cascade);
+			migrationBuilder.AddForeignKey(
+				name: "FK_Notes_Employees_EmployeeId",
+				table: "Notes",
+				column: "EmployeeId",
+				principalTable: "Employees",
+				principalColumn: "EmployeeId",
+				onDelete: ReferentialAction.Cascade);
 
-            migrationBuilder.AddForeignKey(
+			migrationBuilder.AddForeignKey(
                 name: "FK_Pictures_Employees_EmployeeId",
                 table: "Pictures",
                 column: "EmployeeId",

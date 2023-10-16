@@ -1,6 +1,7 @@
 ﻿using EmployeeAPI.Data;
 using EmployeeAPI.Dto;
 using EmployeeAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAPI.Services
 {
@@ -18,7 +19,9 @@ namespace EmployeeAPI.Services
 
 		public IList<EmployeeDto> GetAllEmployees()
 		{
-			return _employeeContext.Employees.Select(x => new EmployeeDto(x)).ToList();
+			var employees = _employeeContext.Employees
+				.Include(e => e.ToDos);
+			return [.. employees.Select(e => new EmployeeDto(e))];
 		}
 
 		public EmployeeDto? GetEmployeeById(Guid employeeId)
