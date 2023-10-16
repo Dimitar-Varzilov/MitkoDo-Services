@@ -25,7 +25,7 @@ namespace AuthenticationAPI.Services
 		private readonly string issuer = configuration.GetSection("JWT:ValidIssuer").Value!;
 		private readonly string audience = configuration.GetSection("JWT:ValidAudience").Value!;
 		readonly List<SecurityKey> securityKeys = [new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("JWT:Secret").Value!))];
-		private readonly DateTime tokenExpirationDate = DateTime.Now.AddDays(30);
+		private readonly DateTime tokenExpirationDate = DateTime.Now.AddHours(3);
 		private readonly IBus _bus = bus;
 
 		private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

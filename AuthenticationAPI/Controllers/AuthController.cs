@@ -37,13 +37,6 @@ namespace AuthenticationAPI.Controllers
 			string responseToken = _authService.LoginUser(request);
 			if (responseToken == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
 			if (responseToken == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
-			Response.Cookies.Append("token", responseToken, new CookieOptions
-			{
-				HttpOnly = true,
-				//SameSite = SameSiteMode.Strict,
-				//Secure = true,
-				Expires = _authService.GetTokenExpirationDate()
-			});
 			return Ok(responseToken);
 		}
 		[HttpPost("verifyToken")]
