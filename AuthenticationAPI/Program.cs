@@ -11,6 +11,10 @@ namespace AuthenticationAPI
 {
 	public class Program
 	{
+		static bool? _isRunningInContainer;
+
+		static bool IsRunningInContainer =>
+			_isRunningInContainer ??= bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer) && inContainer;
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +29,7 @@ namespace AuthenticationAPI
 			bool envIsDev = builder.Environment.IsDevelopment();
 
 			//Custom services
-			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDb")));
+			builder.Services.AddDbContext<AuthContext>(options => options.UseSqlServer(builder.Configuration["ConnectionStrings:AuthDb"]));
 			builder.Services.AddScoped<IAuthService, AuthService>();
 
 			builder.Services.AddMassTransit(x =>
@@ -35,13 +39,16 @@ namespace AuthenticationAPI
 
 				x.UsingRabbitMq((context, cfg) =>
 				{
-					//if (IsRunningInContainer)
-					//	cfg.Host("rabbitmq");
-					cfg.Host("localhost", "/", h =>
+					if (IsRunningInContainer)
+						cfg.Host(builder.Configuration["MessageBroker:Host"]);
+					else
 					{
-						h.Username("guest");
-						h.Password("guest");
-					});
+						cfg.Host("localhost", "/", h =>
+						{
+							h.Username("guest");
+							h.Password("guest");
+						});
+					}
 
 					cfg.ConfigureEndpoints(context);
 				});
