@@ -16,7 +16,7 @@ namespace AuthenticationAPI.Controllers
 		public async Task<ActionResult<UserDto>> Register(RegisterDto request)
 		{
 			if (request.Password != request.ConfirmPassword) return BadRequest("Passwords do not match");
-			UserDto? createdUser = await _authService.RegisterUser(request);
+			UserDto? createdUser = await _authService.RegisterUserAsync(request);
 			return (createdUser == null)
 				? BadRequest("Email is already registered")
 				: Ok(createdUser);
@@ -26,7 +26,7 @@ namespace AuthenticationAPI.Controllers
 		public async Task<ActionResult<UserDto>> RegisterManager(RegisterDto request)
 		{
 			if (request.Password != request.ConfirmPassword) return BadRequest("Passwords do not match");
-			UserDto? createdUser = await _authService.RegisterUser(request, UserRole.MANAGER);
+			UserDto? createdUser = await _authService.RegisterUserAsync(request, UserRole.MANAGER);
 			return (createdUser == null)
 				? BadRequest("Email is already registered")
 				: Ok(createdUser);
@@ -56,7 +56,7 @@ namespace AuthenticationAPI.Controllers
 		{
 			if (changePasswordDto == null)
 				return BadRequest("Invalid token or error getting token");
-			int result = await _authService.ChangePassword(changePasswordDto);
+			int result = await _authService.ChangePasswordAsync(changePasswordDto);
 			return StatusCode(result);
 		}
 	}

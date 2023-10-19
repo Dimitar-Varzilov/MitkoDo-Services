@@ -14,9 +14,9 @@ namespace AuthenticationAPI.Services
 
 	public interface IAuthService
 	{
-		Task<UserDto?> RegisterUser(RegisterDto registerDto, string userRole = UserRole.MEMBER);
+		Task<UserDto?> RegisterUserAsync(RegisterDto registerDto, string userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
-		Task<int> ChangePassword(ChangePasswordDto changePasswordDto);
+		Task<int> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
 		bool ValidateToken(string token);
 	}
 	public class AuthService(AuthContext authContext, IConfiguration configuration, IBus bus) : IAuthService
@@ -59,7 +59,7 @@ namespace AuthenticationAPI.Services
 			return jwt;
 		}
 
-		public async Task<UserDto?> RegisterUser(RegisterDto dto, string userRole = UserRole.MEMBER)
+		public async Task<UserDto?> RegisterUserAsync(RegisterDto dto, string userRole = UserRole.MEMBER)
 		{
 			User? user = _authContext.Users.FirstOrDefault(user => user.Email == dto.Email);
 			if (user != null)
@@ -124,7 +124,7 @@ namespace AuthenticationAPI.Services
 			}
 		}
 
-		public async Task<int> ChangePassword(ChangePasswordDto changePasswordDto)
+		public async Task<int> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
 		{
 			try
 			{
