@@ -35,7 +35,7 @@ namespace AuthenticationAPI.Services
 			passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
 		}
 
-		private static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+		private static bool VerifyPassword(string password, byte[] passwordHash, byte[] passwordSalt)
 		{
 			using var hmac = new HMACSHA512(passwordSalt);
 			var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
@@ -87,10 +87,8 @@ namespace AuthenticationAPI.Services
 		public string LoginUser(LoginDto request)
 		{
 			User? user = _authContext.Users.FirstOrDefault(user => user.Email == request.Email);
-			if (user == null)
-				return StatusCodes.Status404NotFound.ToString();
 
-			if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+			if (user == null || !VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
 				return StatusCodes.Status400BadRequest.ToString();
 
 			string token = CreateToken(user, tokenExpirationDate);
@@ -134,7 +132,7 @@ namespace AuthenticationAPI.Services
 				if (user == null)
 					return StatusCodes.Status404NotFound;
 
-				if (!VerifyPasswordHash(changePasswordDto.OldPassword, user.PasswordHash, user.PasswordSalt) || changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
+				if (!VerifyPassword(changePasswordDto.OldPassword, user.PasswordHash, user.PasswordSalt) || changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
 					return StatusCodes.Status400BadRequest;
 
 				CreatePasswordHash(changePasswordDto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
@@ -150,7 +148,7 @@ namespace AuthenticationAPI.Services
 			{
 				return StatusCodes.Status500InternalServerError;
 			}
-			
+
 		}
 	}
 }

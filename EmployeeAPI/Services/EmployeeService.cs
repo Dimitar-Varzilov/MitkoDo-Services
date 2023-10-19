@@ -20,13 +20,16 @@ namespace EmployeeAPI.Services
 		public IList<EmployeeDto> GetAllEmployees()
 		{
 			var employees = _employeeContext.Employees
+				.AsNoTracking()
 				.Include(e => e.ToDos);
 			return [.. employees.Select(e => new EmployeeDto(e))];
 		}
 
 		public EmployeeDto? GetEmployeeById(Guid employeeId)
 		{
-			Employee? employee = _employeeContext.Employees.FirstOrDefault(x => x.EmployeeId == employeeId);
+			Employee? employee = _employeeContext.Employees
+				.AsNoTracking()
+				.FirstOrDefault(x => x.EmployeeId == employeeId);
 
 			if (employee == null) return null;
 
@@ -35,7 +38,9 @@ namespace EmployeeAPI.Services
 
 		public EmployeeDetailsDto? GetEmployeeDetails(Guid employeeId)
 		{
-			Employee? employee = _employeeContext.Employees.FirstOrDefault(x => x.EmployeeId == employeeId);
+			Employee? employee = _employeeContext.Employees
+				.AsNoTracking()
+				.FirstOrDefault(x => x.EmployeeId == employeeId);
 			if (employee == null) return null;
 
 			return new EmployeeDetailsDto(employee);
@@ -43,13 +48,11 @@ namespace EmployeeAPI.Services
 
 		public bool? IsEmployeeAvailable(Guid employeeId)
 		{
-			Employee? employee = _employeeContext.Employees.FirstOrDefault(x => x.EmployeeId == employeeId);
+			Employee? employee = _employeeContext.Employees
+				.FirstOrDefault(x => x.EmployeeId == employeeId);
 			if (employee == null) return null;
 
 			return employee.IsAvailable;
 		}
-
 	}
-
-
 }

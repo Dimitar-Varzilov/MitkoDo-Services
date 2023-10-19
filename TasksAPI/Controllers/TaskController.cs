@@ -63,7 +63,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> EditToDo(Guid toDoId, EditToDoDto editToDoDto)
 		{
-			int response = await _taskService.EditToDo(toDoId, editToDoDto);
+			int response = await _taskService.EditToDoAsync(toDoId, editToDoDto);
 			return StatusCode(response);
 		}
 
@@ -71,7 +71,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> AssignEmployee(Guid toDoId, IList<Guid> employeeIds)
 		{
-			int response = await _taskService.AssignEmployees(toDoId, employeeIds);
+			int response = await _taskService.AssignEmployeesAsync(toDoId, employeeIds);
 			return StatusCode(response);
 		}
 
@@ -79,7 +79,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<SubTaskDto?>> AddSubTask(Guid toDoId, CreateSubTaskDto createSubTaskDto)
 		{
-			SubTaskDto? newSubTask = await _taskService.AddSubTask(toDoId, createSubTaskDto);
+			SubTaskDto? newSubTask = await _taskService.AddSubTaskAsync(toDoId, createSubTaskDto);
 			return newSubTask == null ? NotFound("Task Not Found") : Ok(newSubTask);
 		}
 
@@ -87,7 +87,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> EditSubTask(Guid subTaskId, CreateSubTaskDto createSubTaskDto)
 		{
-			int response = await _taskService.EditSubTask(subTaskId, createSubTaskDto);
+			int response = await _taskService.EditSubTaskAsync(subTaskId, createSubTaskDto);
 			return StatusCode(response);
 		}
 
@@ -95,7 +95,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> RemoveEmployee(Guid toDoId, [FromBody] EmployeeIdsDto employeeIdDto)
 		{
-			int response = await _taskService.RemoveEmployee(toDoId, employeeIdDto);
+			int response = await _taskService.RemoveEmployeeAsync(toDoId, employeeIdDto);
 			return StatusCode(response);
 		}
 
@@ -103,7 +103,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> DeleteSubTask(Guid subTaskId)
 		{
-			int response = await _taskService.DeleteSubTask(subTaskId);
+			int response = await _taskService.DeleteSubTaskAsync(subTaskId);
 			return StatusCode(response);
 		}
 
@@ -111,7 +111,7 @@ namespace TasksAPI.Controllers
 		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<int>> DeleteTask(Guid toDoId)
 		{
-			int response = await _taskService.DeleteToDo(toDoId);
+			int response = await _taskService.DeleteToDoAsync(toDoId);
 			return StatusCode(response);
 		}
 
@@ -121,7 +121,7 @@ namespace TasksAPI.Controllers
 		{
 			Guid? employeeId = Utilities.GetEmployeeId(User);
 			if (employeeId == null) return Unauthorized();
-			int response = await _taskService.AddSubTaskImagesAndNote(subTaskId, addImagesAndNoteDto, (Guid)employeeId);
+			int response = await _taskService.AddSubTaskImagesAndNoteAsync(subTaskId, addImagesAndNoteDto, (Guid)employeeId);
 			return StatusCode(response);
 		}
 	}

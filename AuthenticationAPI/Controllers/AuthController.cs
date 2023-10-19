@@ -36,8 +36,7 @@ namespace AuthenticationAPI.Controllers
 		public ActionResult<string> Login(LoginDto request)
 		{
 			string responseToken = _authService.LoginUser(request);
-			if (responseToken == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
-			if (responseToken == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
+			if (responseToken == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid email or password");
 			return Ok(responseToken);
 		}
 
