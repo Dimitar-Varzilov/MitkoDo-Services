@@ -26,8 +26,16 @@ namespace EmployeeWorker
 			Host.CreateDefaultBuilder(args)
 				.ConfigureServices((hostContext, services) =>
 				{
-
 					var configuration = hostContext.Configuration;
+
+					if (IsRunningInContainer)
+					{
+						services.Configure<HostOptions>(options =>
+						{
+							options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+						});
+					}
+
 					services.AddMassTransit(x =>
 					{
 
@@ -51,7 +59,7 @@ namespace EmployeeWorker
 							cfg.ConfigureEndpoints(context);
 						});
 					});
-					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));
+					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(configuration.GetConnectionString("EmployeeDb")));
 				});
 	}
 }
