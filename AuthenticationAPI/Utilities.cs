@@ -5,15 +5,7 @@ namespace AuthenticationAPI
 {
 	public class Utilities
 	{
-		public static string? GetJwtTokenFromCookie(HttpRequest httpRequest)
-		{
-			bool tryGetValue = httpRequest.Cookies.TryGetValue("token", out string? token);
-			if (!tryGetValue || token == null)
-				return null;
-			return token;
-		}
-
-		public static string? GetJwtTokenFromHeader(HttpRequest httpRequest)
+		public static string? GetJwtToken(HttpRequest httpRequest)
 		{
 			StringValues header = httpRequest.Headers.Authorization;
 			if (header.Count == 0)

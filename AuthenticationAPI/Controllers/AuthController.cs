@@ -1,6 +1,7 @@
 using AuthenticationAPI.Dto;
 using AuthenticationAPI.Enums;
 using AuthenticationAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthenticationAPI.Controllers
@@ -32,36 +33,32 @@ namespace AuthenticationAPI.Controllers
 		}
 
 		[HttpPost("login")]
-		public IActionResult Login(LoginDto request)
+		public ActionResult<string> Login(LoginDto request)
 		{
 			string responseToken = _authService.LoginUser(request);
 			if (responseToken == StatusCodes.Status404NotFound.ToString()) return BadRequest("User not found");
 			if (responseToken == StatusCodes.Status400BadRequest.ToString()) return BadRequest("Invalid password");
 			return Ok(responseToken);
 		}
-		[HttpPost("verifyToken")]
-		public IActionResult ValidateTokenFromCookie()
-		{
-			string? token = Utilities.GetJwtTokenFromCookie(Request);
-			if (token == null)
-				return BadRequest("Invalid token or error getting token");
-			return _authService.ValidateToken(token) ? Ok() : BadRequest();
-		}
 
+		[Authorize]
 		[HttpPost("verifyTokenFromHeader")]
-		public IActionResult ValidateTokenFromHeader()
+		public IActionResult ValidateToken()
 		{
-			string? token = Utilities.GetJwtTokenFromHeader(Request);
+			string? token = Utilities.GetJwtToken(Request);
 			if (token == null)
 				return BadRequest("Invalid token or error getting token");
 			return _authService.ValidateToken(token) ? Ok() : BadRequest();
 		}
 
-		[HttpPost("logout")]
-		public ActionResult<string> Logout()
+		[Authorize]
+		[HttpPost("changePassword")]
+		public async Task<ActionResult<int>> ChangeUserPassword(ChangePasswordDto changePasswordDto)
 		{
-			Response.Cookies.Delete("token");
-			return Ok("You have been logged out");
+			if (changePasswordDto == null)
+				return BadRequest("Invalid token or error getting token");
+			int result = await _authService.ChangePassword(changePasswordDto);
+			return StatusCode(result);
 		}
 	}
 }

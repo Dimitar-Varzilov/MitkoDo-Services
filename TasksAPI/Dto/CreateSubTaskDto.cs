@@ -8,7 +8,6 @@ namespace TasksAPI.Dto
 		public string Title { get; set; } = string.Empty;
 		[Required]
 		public string Description { get; set; } = string.Empty;
-		//public string[] Photos { get; set; } = [];
 		public int PicturesCountToBeCompleted { get; set; }
 		[Required]
 		[Range(1, int.MaxValue)]

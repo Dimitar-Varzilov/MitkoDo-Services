@@ -2,15 +2,9 @@
 
 namespace EmployeeAPI.Dto
 {
-	public class ToDoDto
+	public class ToDoDto(ToDo toDo)
 	{
-		public Guid ToDoId { get; set; }
-		public string Title { get; set; } = string.Empty;
-
-        public ToDoDto(ToDo toDo)
-        {
-            ToDoId = toDo.ToDoId;
-			Title = toDo.Title;
-        }
-    }
+		public Guid ToDoId { get; set; } = toDo.ToDoId;
+		public string Title { get; set; } = toDo.Title;
+	}
 }

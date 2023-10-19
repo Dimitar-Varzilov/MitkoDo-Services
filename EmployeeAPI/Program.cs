@@ -1,5 +1,3 @@
-
-using AutoMapper;
 using EmployeeAPI.Data;
 using EmployeeAPI.Services;
 using EmployeeAPI.Swagger;
@@ -42,7 +40,7 @@ namespace EmployeeAPI
 			//Custom services
 			builder.Services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("EmployeeDb")));
 			builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-			
+
 			var app = builder.Build();
 
 			app.UseCors(option => option.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader());

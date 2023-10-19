@@ -14,10 +14,10 @@ namespace AuthenticationAPI.Services
 
 	public interface IAuthService
 	{
-		Task<UserDto?> RegisterUser(RegisterDto user, string userRole = UserRole.MEMBER);
+		Task<UserDto?> RegisterUser(RegisterDto registerDto, string userRole = UserRole.MEMBER);
 		string LoginUser(LoginDto user);
+		Task<int> ChangePassword(ChangePasswordDto changePasswordDto);
 		bool ValidateToken(string token);
-		DateTime GetTokenExpirationDate();
 	}
 	public class AuthService(AuthContext authContext, IConfiguration configuration, IBus bus) : IAuthService
 	{
@@ -126,10 +126,31 @@ namespace AuthenticationAPI.Services
 			}
 		}
 
-
-		public DateTime GetTokenExpirationDate()
+		public async Task<int> ChangePassword(ChangePasswordDto changePasswordDto)
 		{
-			return tokenExpirationDate;
+			try
+			{
+				User? user = _authContext.Users.FirstOrDefault(user => user.Email == changePasswordDto.Email);
+				if (user == null)
+					return StatusCodes.Status404NotFound;
+
+				if (!VerifyPasswordHash(changePasswordDto.OldPassword, user.PasswordHash, user.PasswordSalt) || changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
+					return StatusCodes.Status400BadRequest;
+
+				CreatePasswordHash(changePasswordDto.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+				user.PasswordHash = passwordHash;
+				user.PasswordSalt = passwordSalt;
+
+				_authContext.Users.Update(user);
+				await _authContext.SaveChangesAsync();
+				return StatusCodes.Status200OK;
+			}
+			catch (Exception)
+			{
+				return StatusCodes.Status500InternalServerError;
+			}
+			
 		}
 	}
 }
