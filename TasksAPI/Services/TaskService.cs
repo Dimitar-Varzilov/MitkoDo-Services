@@ -138,11 +138,11 @@ namespace TasksAPI.Services
 
 				IList<Employee?> employeesToAssign = [.. _taskContext.Employees
 					.Where(employee =>
-						employeeIds.Any(id => id == employee.EmployeeId) && 
+						employeeIds.Any(id => id == employee.EmployeeId) &&
 						!employee.ToDos.Any(t => t.ToDoId == toDoId))];
 				if (employeesToAssign.Count == 0) return StatusCodes.Status404NotFound;
 
-				todo.Employees =[.. todo.Employees.Union(employeesToAssign)];
+				todo.Employees = [.. todo.Employees.Union(employeesToAssign)];
 
 				await _taskContext.SaveChangesAsync();
 
@@ -159,7 +159,6 @@ namespace TasksAPI.Services
 
 		public async Task<SubTaskDto?> AddSubTaskAsync(Guid toDoId, CreateSubTaskDto createSubTaskDto)
 		{
-			if (createSubTaskDto.NotesCountToBeCompleted == 0) return null;
 			ToDo? todo = _taskContext.ToDos
 				.FirstOrDefault(task => task.ToDoId == toDoId);
 			if (todo == null) return null;
@@ -176,8 +175,6 @@ namespace TasksAPI.Services
 			};
 			_taskContext.Add(newSubTask);
 
-			await _bus.Publish(new SubTaskAddedEvent(newSubTask));
-
 			await _taskContext.SaveChangesAsync();
 
 			return new SubTaskDto(newSubTask);
@@ -188,19 +185,17 @@ namespace TasksAPI.Services
 			try
 			{
 				IList<ToDo> query = [.. _taskContext.ToDos
-					.Where(toDo => 
-						toDo.StartDate < DateTime.Now 
-						&& toDo.DueDate > DateTime.Now 
+					.Where(toDo =>
+						toDo.StartDate < DateTime.Now
+						&& toDo.DueDate > DateTime.Now
 						&& toDo.SubTasks.Any(subTask => subTask.SubTaskId == subTaskId))
 					.Include(t => t.SubTasks.Where(s => s.SubTaskId == subTaskId))];
-					
+
 				if (query.Count == 0) return StatusCodes.Status400BadRequest;
 
 				SubTask subTaskToEdit = query.First().SubTasks.First();
 				_taskContext.Entry(subTaskToEdit).CurrentValues.SetValues(createSubTaskDto);
 				await _taskContext.SaveChangesAsync();
-
-				await _bus.Publish(new SubTaskEditedEvent(subTaskToEdit));
 
 				return StatusCodes.Status200OK;
 			}
@@ -216,8 +211,11 @@ namespace TasksAPI.Services
 		{
 			try
 			{
-				SubTask? subTask = _taskContext.SubTasks.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
-				if (subTask == null) return StatusCodes.Status400BadRequest;
+				SubTask? subTask = _taskContext.SubTasks
+					.FirstOrDefault(subTask => subTask.SubTaskId == subTaskId);
+				Employee? employee = _taskContext.Employees
+					.FirstOrDefault(employee => employee.EmployeeId == employeeId);
+				if (subTask == null || employee == null) return StatusCodes.Status400BadRequest;
 
 				if (dto.Images.Count > 0)
 				{
@@ -227,14 +225,24 @@ namespace TasksAPI.Services
 						string filePath = Path.Combine(directory, image.FileName);
 						FileStream fileStream = new(filePath, FileMode.Create);
 						await image.CopyToAsync(fileStream);
-						subTask.Pictures.Add(new Picture() { Path = filePath });
+
+						Picture newPicture = new()
+						{
+							Path = filePath,
+							UploadedBy = employee.EmployeeId
+						};
+						subTask.Pictures.Add(newPicture);
 					}
 				}
 
-				subTask.Notes.Add(new() { Title = dto.Note });
-				await _taskContext.SaveChangesAsync();
+				Note newNote = new()
+				{
+					Title = dto.Note,
+					UploadedBy = employee.EmployeeId
+				};
+				subTask.Notes.Add(newNote);
 
-				await _bus.Publish(new PictureAndNoteAddedEvent(subTask, dto, employeeId));
+				await _taskContext.SaveChangesAsync();
 
 				return StatusCodes.Status201Created;
 			}
@@ -302,8 +310,6 @@ namespace TasksAPI.Services
 
 				_taskContext.Remove(subTask);
 				await _taskContext.SaveChangesAsync();
-
-				await _bus.Publish(new SubTaskDeletedEvent(subTask.SubTaskId));
 
 				return StatusCodes.Status200OK;
 			}

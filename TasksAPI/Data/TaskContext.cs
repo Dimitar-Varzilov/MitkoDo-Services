@@ -45,12 +45,14 @@ namespace TasksAPI.Data
 			{
 				builder.HasKey(p => p.NoteId);
 				builder.Property(p => p.Title).IsRequired();
+				builder.HasOne<Employee>().WithMany().HasForeignKey(p => p.UploadedBy).IsRequired();
 			});
 
 			modelBuilder.Entity<Picture>(builder =>
 			{
 				builder.HasKey(p => p.PictureId);
 				builder.Property(p => p.Path).IsRequired();
+				builder.HasOne<Employee>().WithMany().HasForeignKey(p => p.UploadedBy).IsRequired();
 			});
 		}
 	}
