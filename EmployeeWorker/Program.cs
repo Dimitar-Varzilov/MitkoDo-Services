@@ -26,6 +26,8 @@ namespace EmployeeWorker
 			Host.CreateDefaultBuilder(args)
 				.ConfigureServices((hostContext, services) =>
 				{
+
+					var configuration = hostContext.Configuration;
 					services.AddMassTransit(x =>
 					{
 
@@ -40,59 +42,13 @@ namespace EmployeeWorker
 
 						x.UsingRabbitMq((context, cfg) =>
 						{
-							if (IsRunningInContainer)
-								cfg.Host("rabbitmq");
-							else
+							cfg.Host(configuration["MessageBroker:Host"], "/", h =>
 							{
-
-								cfg.Host("localhost", "/", h =>
-								{
-									h.Username("guest");
-									h.Password("guest");
-								});
-							}
+								h.Username(configuration["MessageBroker:guest"]);
+								h.Password(configuration["MessageBroker:guest"]);
+							});
 
 							cfg.ConfigureEndpoints(context);
-							//cfg.ReceiveEndpoint("employee.user-created", e =>
-							//{
-							//	e.ConfigureConsumer<UserCreatedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.todo-added", e =>
-							//{
-							//	e.ConfigureConsumer<ToDoAddedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.todo-edited", e =>
-							//{
-							//	e.ConfigureConsumer<ToDoEditedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.employee-assigned", e =>
-							//{
-							//	e.ConfigureConsumer<EmployeeAssignedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.subtask-added", e =>
-							//{
-							//	e.ConfigureConsumer<SubTaskAddedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.subtask-edited", e =>
-							//{
-							//	e.ConfigureConsumer<SubTaskEditedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.picture-note-added", e =>
-							//{
-							//	e.ConfigureConsumer<PictureAndNoteAddedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.employees-removed", e =>
-							//{
-							//	e.ConfigureConsumer<EmployeesRemovedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.todo-deleted", e =>
-							//{
-							//	e.ConfigureConsumer<ToDoDeletedEventConsumer>(context);
-							//});
-							//cfg.ReceiveEndpoint("employee.subtask-deleted", e =>
-							//{
-							//	e.ConfigureConsumer<SubTaskDeletedEventConsumer>(context);
-							//});
 						});
 					});
 					services.AddDbContext<EmployeeContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("EmployeeDb")));

@@ -47,15 +47,11 @@ namespace TasksAPI
 
 				x.UsingRabbitMq((context, cfg) =>
 				{
-					//if (IsRunningInContainer)
-					//	cfg.Host("rabbitmq");
-					cfg.Host("localhost", "/", h =>
+					cfg.Host(configuration["MessageBroker:Host"], "/", h =>
 					{
-						h.Username("guest");
-						h.Password("guest");
+						h.Username(configuration["MessageBroker:guest"]);
+						h.Password(configuration["MessageBroker:guest"]);
 					});
-
-					cfg.UseDelayedMessageScheduler();
 
 					cfg.ConfigureEndpoints(context);
 				});

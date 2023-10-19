@@ -28,6 +28,7 @@ namespace TaskWorker
 			Host.CreateDefaultBuilder(args)
 				.ConfigureServices((hostContext, services) =>
 				{
+					var configuration = hostContext.Configuration;
 					if (IsRunningInContainer)
 					{
 						services.Configure<HostOptions>(options =>
@@ -35,14 +36,10 @@ namespace TaskWorker
 							options.ShutdownTimeout = TimeSpan.FromSeconds(30);
 						});
 					}
-					services.Configure<MessageBrokerSettings>(hostContext.Configuration.GetSection("MessageBroker"));
-					services.AddSingleton(services => services.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
 					services.AddMassTransit(busConfigurator =>
 					{
 						busConfigurator.SetKebabCaseEndpointNameFormatter();
-
-						// By default, sagas are in-memory, but should be changed to a durable
-						// saga repository.
 
 						var entryAssembly = Assembly.GetEntryAssembly();
 
@@ -51,19 +48,13 @@ namespace TaskWorker
 
 						busConfigurator.UsingRabbitMq((context, cfg) =>
 						{
-							MessageBrokerSettings messageBrokerSettings = context.GetRequiredService<MessageBrokerSettings>();
-							//cfg.Host(hostContext.Configuration.GetConnectionString("DefaultConnection"));
-							cfg.Host(messageBrokerSettings.Host, h =>
+							cfg.Host(configuration["MessageBroker:Host"], "/", h =>
 							{
-								h.Username(messageBrokerSettings.Username);
-								h.Password(messageBrokerSettings.Password);
+								h.Username(configuration["MessageBroker:guest"]);
+								h.Password(configuration["MessageBroker:guest"]);
 							});
 
-							//cfg.ConfigureEndpoints(context);
-							cfg.ReceiveEndpoint("task.user-created", e =>
-							{
-								e.ConfigureConsumer<UserCreatedEventConsumer>(context);
-							});
+							cfg.ConfigureEndpoints(context);
 						});
 					});
 					services.AddDbContext<TaskContext>(options => options.UseSqlServer(hostContext.Configuration.GetConnectionString("TaskDb")));

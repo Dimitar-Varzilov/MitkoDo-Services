@@ -14,10 +14,6 @@ namespace AuthenticationAPI
 {
 	public class Program
 	{
-		static bool? _isRunningInContainer;
-
-		static bool IsRunningInContainer =>
-			_isRunningInContainer ??= bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), out var inContainer) && inContainer;
 		public static void Main(string[] args)
 		{
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -58,16 +54,11 @@ namespace AuthenticationAPI
 
 				x.UsingRabbitMq((context, cfg) =>
 				{
-					if (IsRunningInContainer)
-						cfg.Host(configuration["MessageBroker:Host"]);
-					else
+					cfg.Host(configuration["MessageBroker:Host"], "/", h =>
 					{
-						cfg.Host("localhost", "/", h =>
-						{
-							h.Username("guest");
-							h.Password("guest");
-						});
-					}
+						h.Username(configuration["MessageBroker:guest"]);
+						h.Password(configuration["MessageBroker:guest"]);
+					});
 
 					cfg.ConfigureEndpoints(context);
 				});
