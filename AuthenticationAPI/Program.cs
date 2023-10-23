@@ -66,8 +66,7 @@ namespace AuthenticationAPI
 
 			var app = builder.Build();
 
-			app.UseCors(option => option.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader());
-			app.UseCors(option => option.WithOrigins("http://localhost:3001").AllowAnyMethod().AllowAnyHeader());
+			app.UseCors(option => option.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 			// Configure the HTTP request pipeline.
 			if (envIsDev)
