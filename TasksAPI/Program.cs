@@ -59,7 +59,7 @@ namespace TasksAPI
 
 			var app = builder.Build();
 
-			app.UseCors(option => option.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
+			app.UseCors(option => option.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
