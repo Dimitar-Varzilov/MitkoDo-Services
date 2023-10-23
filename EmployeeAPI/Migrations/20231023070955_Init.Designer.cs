@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeAPI.Migrations
 {
     [DbContext(typeof(EmployeeContext))]
-    [Migration("20231019141225_Remove-Picture-Notes-Employee_Service")]
-    partial class RemovePictureNotesEmployee_Service
+    [Migration("20231023070955_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

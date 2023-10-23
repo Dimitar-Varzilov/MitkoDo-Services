@@ -12,7 +12,7 @@ using TasksAPI.Data;
 namespace TasksAPI.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20231005122236_Init")]
+    [Migration("20231023071205_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -20,10 +20,25 @@ namespace TasksAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "7.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("EmployeeToDo", b =>
+                {
+                    b.Property<Guid>("EmployeesEmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ToDosToDoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EmployeesEmployeeId", "ToDosToDoId");
+
+                    b.HasIndex("ToDosToDoId");
+
+                    b.ToTable("EmployeeToDo");
+                });
 
             modelBuilder.Entity("TasksAPI.Models.Employee", b =>
                 {
@@ -35,12 +50,7 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ToDoId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("EmployeeId");
-
-                    b.HasIndex("ToDoId");
 
                     b.ToTable("Employees");
                 });
@@ -58,9 +68,14 @@ namespace TasksAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("UploadedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("NoteId");
 
                     b.HasIndex("SubTaskId");
+
+                    b.HasIndex("UploadedBy");
 
                     b.ToTable("Notes");
                 });
@@ -78,9 +93,14 @@ namespace TasksAPI.Migrations
                     b.Property<Guid>("SubTaskId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("UploadedBy")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("PictureId");
 
                     b.HasIndex("SubTaskId");
+
+                    b.HasIndex("UploadedBy");
 
                     b.ToTable("Pictures");
                 });
@@ -144,15 +164,19 @@ namespace TasksAPI.Migrations
                     b.ToTable("ToDos");
                 });
 
-            modelBuilder.Entity("TasksAPI.Models.Employee", b =>
+            modelBuilder.Entity("EmployeeToDo", b =>
                 {
-                    b.HasOne("TasksAPI.Models.ToDo", "ToDo")
-                        .WithMany("Employees")
-                        .HasForeignKey("ToDoId")
+                    b.HasOne("TasksAPI.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeesEmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ToDo");
+                    b.HasOne("TasksAPI.Models.ToDo", null)
+                        .WithMany()
+                        .HasForeignKey("ToDosToDoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TasksAPI.Models.Note", b =>
@@ -160,6 +184,12 @@ namespace TasksAPI.Migrations
                     b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Notes")
                         .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TasksAPI.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -171,6 +201,12 @@ namespace TasksAPI.Migrations
                     b.HasOne("TasksAPI.Models.SubTask", "SubTask")
                         .WithMany("Pictures")
                         .HasForeignKey("SubTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TasksAPI.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -197,8 +233,6 @@ namespace TasksAPI.Migrations
 
             modelBuilder.Entity("TasksAPI.Models.ToDo", b =>
                 {
-                    b.Navigation("Employees");
-
                     b.Navigation("SubTasks");
                 });
 #pragma warning restore 612, 618
