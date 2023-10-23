@@ -60,6 +60,7 @@ namespace TasksAPI
 			var app = builder.Build();
 
 			app.UseCors(option => option.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
+			app.UseCors(option => option.WithOrigins("http://localhost:3001").AllowAnyMethod().AllowAnyHeader());
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
