@@ -24,7 +24,7 @@ namespace TasksAPI.Controllers
 
 		[HttpGet("{toDoId:guid}")]
 		[Authorize(Roles = UserRole.MANAGER)]
-		public ActionResult<IList<ToDoDto>> GetToDoById(Guid toDoId)
+		public ActionResult<ToDoDto> GetToDoById(Guid toDoId)
 		{
 			ToDoDto? toDo = _taskService.GetToDoById(toDoId);
 			if (toDo == null) return NotFound("Task Not Found");
