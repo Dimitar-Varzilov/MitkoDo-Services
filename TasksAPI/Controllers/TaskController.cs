@@ -51,7 +51,7 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpPost]
-		//[Authorize(Roles = UserRole.MANAGER)]
+		[Authorize(Roles = UserRole.MANAGER)]
 		public async Task<ActionResult<ToDoDto>> AddToDo(CreateToDoDto dto)
 		{
 			ToDoDto newTodo = await _taskService.AddToDoAsync(dto);
