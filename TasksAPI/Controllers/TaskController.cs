@@ -23,7 +23,7 @@ namespace TasksAPI.Controllers
 		}
 
 		[HttpGet("{toDoId:guid}")]
-		[Authorize(Roles = UserRole.MANAGER)]
+		[Authorize(Roles = UserRole.MEMBER)]
 		public ActionResult<ToDoDto> GetToDoById(Guid toDoId)
 		{
 			ToDoDto? toDo = _taskService.GetToDoById(toDoId);
