@@ -7,10 +7,10 @@
 		public string Description { get; set; } = string.Empty;
 		public int PicturesCountToBeCompleted { get; set; } = 0;
 		public int NotesCountToBeCompleted { get; set; } = 1;
-		public bool IsCompleted 
-		{ 
+		public bool IsCompleted
+		{
 			get => Notes.Count >= NotesCountToBeCompleted && Pictures.Count >= PicturesCountToBeCompleted;
-		} 
+		}
 		public Guid ToDoId { get; set; }
 		public ToDo Todo { get; set; } = new ToDo();
 

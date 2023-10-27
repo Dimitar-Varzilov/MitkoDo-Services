@@ -1,4 +1,3 @@
-using EmployeeWorker.Consumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

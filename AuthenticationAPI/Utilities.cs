@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Primitives;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace AuthenticationAPI
 {

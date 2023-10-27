@@ -1,7 +1,6 @@
 using AuthenticationAPI.Data;
 using AuthenticationAPI.Services;
 using AuthenticationAPI.Swagger;
-using AutoMapper;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

@@ -8,14 +8,14 @@ namespace TasksAPI.Dto
 		public Guid PictureId { get; set; }
 		public string Path { get; set; } = string.Empty;
 		[JsonConstructor]
-        public PictureDto()
-        {
-		
-        }
-        public PictureDto(Picture picture)
+		public PictureDto()
 		{
-            PictureId = picture.PictureId;
+
+		}
+		public PictureDto(Picture picture)
+		{
+			PictureId = picture.PictureId;
 			Path = picture.Path;
-        }
-    }
+		}
+	}
 }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using TasksAPI.Authorization;
 using TasksAPI.Dto;
 using TasksAPI.Services;

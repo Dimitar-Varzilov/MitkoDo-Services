@@ -3,12 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using TaskWorker.Consumers;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TaskWorker
 {

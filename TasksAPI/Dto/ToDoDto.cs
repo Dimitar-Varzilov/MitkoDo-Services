@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using TasksAPI.Models;
+﻿using TasksAPI.Models;
 
 namespace TasksAPI.Dto
 {

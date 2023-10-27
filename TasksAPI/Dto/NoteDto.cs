@@ -6,14 +6,14 @@ namespace TasksAPI.Dto
 	{
 		public Guid NoteId { get; set; }
 		public string Title { get; set; } = string.Empty;
-        public NoteDto()
-        {
-            
-        }
-        public NoteDto(Note note)
+		public NoteDto()
 		{
-            NoteId = note.NoteId;
+
+		}
+		public NoteDto(Note note)
+		{
+			NoteId = note.NoteId;
 			Title = note.Title;
-        }
-    }
+		}
+	}
 }

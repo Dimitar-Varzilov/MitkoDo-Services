@@ -40,8 +40,8 @@ namespace EmployeeWorker.Consumers
 			}
 			catch (Exception e)
 			{
-                await Console.Out.WriteLineAsync(e.Message);
-            }
+				await Console.Out.WriteLineAsync(e.Message);
+			}
 		}
 	}
 }

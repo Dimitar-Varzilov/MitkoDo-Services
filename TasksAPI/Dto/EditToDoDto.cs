@@ -14,17 +14,17 @@ namespace TasksAPI.Dto
 		[Required]
 		public DateTime DueDate { get; set; } = DateTime.Now.AddDays(1);
 
-        public EditToDoDto()
-        {
-            
-        }
+		public EditToDoDto()
+		{
 
-        public EditToDoDto(ToDo toDo)
-        {
-            Title = toDo.Title;
+		}
+
+		public EditToDoDto(ToDo toDo)
+		{
+			Title = toDo.Title;
 			Description = toDo.Description;
 			StartDate = toDo.StartDate;
 			DueDate = toDo.DueDate;
-        }
-    }
+		}
+	}
 }
