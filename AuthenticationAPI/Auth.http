@@ -1,7 +1,0 @@
-@Auth_HostAddress = http://
-:5170
-
-GET {{Auth_HostAddress}}/Auth/
-Accept: application/json
-
-###
