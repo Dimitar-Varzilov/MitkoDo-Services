@@ -3,11 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationAPI.Data
 {
-	public class AuthContext(DbContextOptions<AuthContext> options) : DbContext(options)
+	public class AuthContext : DbContext
 	{
 		public DbSet<User> Users { get; set; }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        public AuthContext(DbContextOptions<AuthContext> options) : base(options)
+        {
+			Database.Migrate();
+		}
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<User>(builder =>
 			{

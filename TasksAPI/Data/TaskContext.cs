@@ -3,13 +3,18 @@ using TasksAPI.Models;
 
 namespace TasksAPI.Data
 {
-	public class TaskContext(DbContextOptions<TaskContext> options) : DbContext(options)
+	public class TaskContext : DbContext
 	{
 		public DbSet<ToDo> ToDos { get; set; }
 		public DbSet<SubTask> SubTasks { get; set; }
 		public DbSet<Note> Notes { get; set; }
 		public DbSet<Picture> Pictures { get; set; }
 		public DbSet<Employee> Employees { get; set; }
+
+		public TaskContext(DbContextOptions<TaskContext> options) : base(options)
+		{
+			Database.Migrate();
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

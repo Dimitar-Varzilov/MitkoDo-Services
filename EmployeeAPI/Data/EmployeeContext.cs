@@ -3,10 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAPI.Data
 {
-	public class EmployeeContext(DbContextOptions<EmployeeContext> options) : DbContext(options)
+	public class EmployeeContext : DbContext
 	{
 		public DbSet<Employee> Employees { get; set; }
 		public DbSet<ToDo> ToDos { get; set; }
+
+		public EmployeeContext(DbContextOptions<EmployeeContext> options) : base(options)
+		{
+			Database.Migrate();
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
